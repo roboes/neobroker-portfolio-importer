@@ -19,7 +19,7 @@ For security reason, it is recommended to keep the default parameters `login` = 
 ## Python dependencies
 
 ```.ps1
-python -m pip install lxml pandas selenium webdriver-manager
+python -m pip install lxml openpyxl pandas selenium webdriver-manager
 ```
 
 ## Functions
@@ -34,8 +34,8 @@ trade_republic_portfolio_import(login=None, password=None, transpose=False, file
 
 ### Parameters
 
-- `login`: *str*, default: *None*. If defined (e.g. `login` = 'email@email.com'), login information is automatically filled; otherwise, user needs to manually add them once the WebDriver initiates.
-- `password`: *str*, default: *None*. If defined (e.g. `password` = '12345'), password information is automatically filled; otherwise, user needs to manually add them once the WebDriver initiates.
+- `login`: *str*, default: *None*. If defined (e.g. `login = 'email@email.com'`), login information is automatically filled; otherwise, user needs to manually add them once the WebDriver initiates.
+- `password`: *str*, default: *None*. If defined (e.g. `password = '12345'`), password information is automatically filled; otherwise, user needs to manually add them once the WebDriver initiates.
 - `transpose`: *bool*, default: *False*. If *True*, imported assets dataset is transposed.
 - `path`: *path object*, default user's *'Downloads'* folder.
 - `file_type`: *str*, options: *'.xlsx'*, *'.csv'* and *None*, default: *'.xlsx'*. If *None*, imported assets dataset is copied to the system clipboard.
