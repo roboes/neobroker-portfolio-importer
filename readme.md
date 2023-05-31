@@ -31,6 +31,7 @@ scalable_capital_portfolio_import(login=None, password=None, transpose=False, fi
 
 <br>
 
+### trade_republic_portfolio_import
 ```.py
 trade_republic_portfolio_import(login=None, password=None, transpose=False, file_type='.xlsx', file_name='Assets Trade Republic.xlsx')
 ```
@@ -45,3 +46,16 @@ trade_republic_portfolio_import(login=None, password=None, transpose=False, file
 - `path`: *path object*, default user's *'Downloads'* folder.
 - `file_type`: *str*, options: *'.xlsx'*, *'.csv'* and *None*, default: *'.xlsx'*. If *None*, imported assets dataset is copied to the system clipboard.
 - `file_name`: *str*, default: *'Assets Scalable Capital.xlsx'* (for `scalable_capital_portfolio_import`) and *'Assets Trade Republic.xlsx'* (for `trade_republic_portfolio_import`).
+
+<br>
+
+### selenium_webdriver_quit
+```.py
+selenium_webdriver_quit()
+```
+
+#### Description
+- Terminates the WebDriver session.
+
+#### Parameters
+- None.

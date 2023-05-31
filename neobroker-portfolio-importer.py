@@ -1,5 +1,5 @@
 ## Neobroker Portfolio Importer
-# Last update: 2023-05-24
+# Last update: 2023-05-31
 
 
 ###############
@@ -52,11 +52,37 @@ def selenium_webdriver():
 
 
 
+# Selenium webdriver quit
+def selenium_webdriver_quit():
+
+        # Import or create global variables
+        global driver
+
+
+        # Driver quit
+        driver.quit()
+
+
+        # Delete objects
+        del driver
+
+
+
 # Scalable Capital Portfolio Import
 def scalable_capital_portfolio_import(*, login=None, password=None, transpose=False, path=os.path.join(os.path.expanduser('~'), 'Downloads'), file_type='.xlsx', file_name='Assets.xlsx'):
 
+    # Import or create global variables
+    global driver
+
+
     # Load Selenium webdriver
-    driver = selenium_webdriver()
+    if 'driver' in vars() or 'driver' in globals():
+        if driver.service.is_connectable() == True:
+            pass
+
+    else:
+        driver = selenium_webdriver()
+
 
     # Open website
     driver.get('https://de.scalable.capital/en/secure-login')
@@ -134,17 +160,13 @@ def scalable_capital_portfolio_import(*, login=None, password=None, transpose=Fa
         data.append(d)
 
 
-    # Driver quit
-    driver.quit()
-
-
     # Create DataFrame
     stocks_isin = pd.DataFrame(data=data, index=None, dtype=None)
 
 
     # Left join 'assets' with 'stocks_isin'
     assets = (assets
-        .merge(stocks_isin.drop_duplicates(keep='first', ignore_index=True), how='left', on=['name'], indicator=False)
+        .merge(stocks_isin.drop_duplicates(subset=None, keep='first', ignore_index=True), how='left', on=['name'], indicator=False)
         .filter(items=['name', 'isin', 'current_value'])
         .sort_values(by=['isin'], ignore_index=True)
     )
@@ -179,8 +201,18 @@ def scalable_capital_portfolio_import(*, login=None, password=None, transpose=Fa
 # Trade Republic Portfolio Import
 def trade_republic_portfolio_import(*, login, password, transpose=False, path=os.path.join(os.path.expanduser('~'), 'Downloads'), file_type='.xlsx', file_name='Assets.xlsx'):
 
+    # Import or create global variables
+    global driver
+
+
     # Load Selenium webdriver
-    driver = selenium_webdriver()
+    if 'driver' in vars() or 'driver' in globals():
+        if driver.service.is_connectable() == True:
+            pass
+
+    else:
+        driver = selenium_webdriver()
+
 
     # Open website
     driver.get('https://app.traderepublic.com')
@@ -245,10 +277,6 @@ def trade_republic_portfolio_import(*, login, password, transpose=False, path=os
         data.append(d)
 
 
-    # Driver quit
-    driver.quit()
-
-
     # Create DataFrame
     assets = (pd.DataFrame(data=data, index=None, dtype=None)
         .filter(items=['name', 'isin', 'current_value'])
@@ -286,3 +314,5 @@ def trade_republic_portfolio_import(*, login, password, transpose=False, path=os
 scalable_capital_portfolio_import(login=None, password=None, transpose=False, file_type='.xlsx', file_name='Assets Scalable Capital.xlsx')
 
 trade_republic_portfolio_import(login=None, password=None, transpose=False, file_type='.xlsx', file_name='Assets Trade Republic.xlsx')
+
+selenium_webdriver_quit()
