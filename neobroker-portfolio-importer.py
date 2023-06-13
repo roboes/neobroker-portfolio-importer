@@ -69,7 +69,7 @@ def selenium_webdriver_quit():
 
 
 # Scalable Capital Portfolio Import
-def scalable_capital_portfolio_import(*, login=None, password=None, transpose=False, path=os.path.join(os.path.expanduser('~'), 'Downloads'), file_type='.xlsx', file_name='Assets.xlsx'):
+def scalable_capital_portfolio_import(*, login=None, password=None, transpose=False, directory=os.path.join(os.path.expanduser('~'), 'Downloads'), file_type='.xlsx', file_name='Assets.xlsx'):
 
     # Import or create global variables
     global driver
@@ -184,10 +184,10 @@ def scalable_capital_portfolio_import(*, login=None, password=None, transpose=Fa
 
     # Save
     if file_type == '.xlsx':
-        assets.to_excel(excel_writer=os.path.join(path, file_name), sheet_name='Stocks', na_rep='', header=True, index=False, index_label=None, freeze_panes=(1, 0), engine='openpyxl')
+        assets.to_excel(excel_writer=os.path.join(directory, file_name), sheet_name='Stocks', na_rep='', header=True, index=False, index_label=None, freeze_panes=(1, 0), engine='openpyxl')
 
     elif file_type == '.csv':
-        assets.to_csv(path_or_buf=os.path.join(path, file_name), sep=',', na_rep='', header=True, index=False, index_label=None, encoding='utf8')
+        assets.to_csv(path_or_buf=os.path.join(directory, file_name), sep=',', na_rep='', header=True, index=False, index_label=None, encoding='utf8')
 
     else:
         assets.to_clipboard(excel=True, sep=None, index=False)
@@ -199,7 +199,7 @@ def scalable_capital_portfolio_import(*, login=None, password=None, transpose=Fa
 
 
 # Trade Republic Portfolio Import
-def trade_republic_portfolio_import(*, login, password, transpose=False, path=os.path.join(os.path.expanduser('~'), 'Downloads'), file_type='.xlsx', file_name='Assets.xlsx'):
+def trade_republic_portfolio_import(*, login, password, transpose=False, directory=os.path.join(os.path.expanduser('~'), 'Downloads'), file_type='.xlsx', file_name='Assets.xlsx'):
 
     # Import or create global variables
     global driver
@@ -292,10 +292,10 @@ def trade_republic_portfolio_import(*, login, password, transpose=False, path=os
 
     # Save
     if file_type == '.xlsx':
-        assets.to_excel(excel_writer=os.path.join(path, file_name), sheet_name='Stocks', na_rep='', header=True, index=False, index_label=None, freeze_panes=(1, 0), engine='openpyxl')
+        assets.to_excel(excel_writer=os.path.join(directory, file_name), sheet_name='Stocks', na_rep='', header=True, index=False, index_label=None, freeze_panes=(1, 0), engine='openpyxl')
 
     elif file_type == '.csv':
-        assets.to_csv(path_or_buf=os.path.join(path, file_name), sep=',', na_rep='', header=True, index=False, index_label=None, encoding='utf8')
+        assets.to_csv(path_or_buf=os.path.join(directory, file_name), sep=',', na_rep='', header=True, index=False, index_label=None, encoding='utf8')
 
     else:
         assets.to_clipboard(excel=True, sep=None, index=False)
