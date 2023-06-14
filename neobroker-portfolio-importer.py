@@ -128,12 +128,12 @@ def scalable_capital_portfolio_import(*, login=None, password=None, transpose=Fa
         .assign(current_value = lambda row: row['name'])
 
         # name
-        .assign(name = lambda row: row['name'].str.replace(pat=r'(^.*)(\u20ac.*)', repl=r'\1', regex=True))
-        .assign(name = lambda row: row['name'].str.replace(pat=r'\u00ae', repl=r'', regex=True))
+        .assign(name = lambda row: row['name'].replace(to_replace=r'(^.*)(\u20ac.*)', value=r'\1', regex=True))
+        .assign(name = lambda row: row['name'].replace(to_replace=r'\u00ae', value=r'', regex=True))
 
         # current_value
-        .assign(current_value = lambda row: row['current_value'].str.replace(pat=r'(^.*\u20ac)([0-9]+,[0-9]+\.[0-9]+|[0-9]+\.[0-9]+)(.*)?', repl=r'\2', regex=True))
-        .assign(current_value = lambda row: row['current_value'].str.replace(pat=r',', repl=r'', regex=True))
+        .assign(current_value = lambda row: row['current_value'].replace(to_replace=r'(^.*\u20ac)([0-9]+,[0-9]+\.[0-9]+|[0-9]+\.[0-9]+)(.*)?', value=r'\2', regex=True))
+        .assign(current_value = lambda row: row['current_value'].replace(to_replace=r',', value=r'', regex=True))
 
         .astype(dtype={'current_value': 'float'})
         .filter(items=['name', 'current_value'])
