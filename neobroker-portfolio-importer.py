@@ -1,5 +1,5 @@
 ## Neobroker Portfolio Importer
-# Last update: 2023-05-31
+# Last update: 2023-07-17
 
 
 ###############
@@ -87,13 +87,6 @@ def scalable_capital_portfolio_import(*, login=None, password=None, transpose=Fa
     # Open website
     driver.get('https://de.scalable.capital/en/secure-login')
 
-    # Cookies: Allow selection
-    try:
-        driver.find_element(by=By.ID, value='CybotCookiebotDialogBodyLevelButtonLevelOptinAllowallSelection').click()
-
-    except:
-        pass
-
 
     # Login
     if login is not None and password is not None:
@@ -120,6 +113,14 @@ def scalable_capital_portfolio_import(*, login=None, password=None, transpose=Fa
     # Open broker
     driver.get('https://de.scalable.capital/broker/')
     time.sleep(5)
+
+
+    # Cookies: Only essentials
+    try:
+        driver.execute_script('''return document.querySelector("#usercentrics-root").shadowRoot.querySelector("button[data-testid='uc-deny-all-button']")''').click()
+
+    except:
+        pass
 
 
     # Import portfolio
@@ -254,6 +255,11 @@ def trade_republic_portfolio_import(*, login, password, transpose=False, directo
     time.sleep(5)
 
 
+    # Change view
+    driver.find_element(by=By.XPATH, value='//div[@class="dropdownList"]').click()
+    driver.find_element(by=By.XPATH, value='//div[@class="dropdownList"]//li[@id="investments-sinceBuyabs"]').click()
+
+
     # Import portfolio
     portfolio_list = driver.find_elements(by=By.XPATH, value='//ul[@class="portfolioInstrumentList"]//li')
 
@@ -269,8 +275,11 @@ def trade_republic_portfolio_import(*, login, password, transpose=False, directo
         # isin
         d['isin'] = portfolio.get_attribute('id')
 
+        # shares
+        d['shares'] = portfolio.find_element(by=By.XPATH, value='.//span[@class="instrumentListItem__priceRow"]//span').text
+
         # current_value
-        d['current_value'] = portfolio.find_element(by=By.XPATH, value='.//span[@class="instrumentListItem__currentPrice"]').text
+        d['current_value'] = portfolio.find_element(by=By.XPATH, value='.//span[@class="instrumentListItem__priceRow"]//span[@class="instrumentListItem__currentPrice"]').text
         d['current_value'] = re.sub(pattern=r' \u20ac', repl=r'', string=d['current_value'])
         d['current_value'] = float(d['current_value'])
 
@@ -279,7 +288,7 @@ def trade_republic_portfolio_import(*, login, password, transpose=False, directo
 
     # Create DataFrame
     assets = (pd.DataFrame(data=data, index=None, dtype=None)
-        .filter(items=['name', 'isin', 'current_value'])
+        .filter(items=['name', 'isin', 'shares', 'current_value'])
         .sort_values(by=['isin'], ignore_index=True)
     )
 
@@ -311,8 +320,8 @@ def trade_republic_portfolio_import(*, login, password, transpose=False, directo
 # Neobroker Portfolio Importer
 ##############################
 
-scalable_capital_portfolio_import(login=None, password=None, transpose=False, file_type='.xlsx', file_name='Assets Scalable Capital.xlsx')
+scalable_capital_portfolio_import(login=None, password=None, transpose=True, file_type='.xlsx', file_name='Assets Scalable Capital.xlsx')
 
-trade_republic_portfolio_import(login=None, password=None, transpose=False, file_type='.xlsx', file_name='Assets Trade Republic.xlsx')
+trade_republic_portfolio_import(login=None, password=None, transpose=True, file_type='.xlsx', file_name='Assets Trade Republic.xlsx')
 
 selenium_webdriver_quit()
