@@ -138,7 +138,7 @@ def scalable_capital_portfolio_import(
 
     # Import portfolio
     assets = (
-        pd.read_html(io=driver.page_source, flavor='lxml', encoding='utf8')[0]
+        pd.read_html(io=driver.page_source, flavor='lxml', encoding='utf-8')[0]
         .rename(columns={'PortfolioSorting A-ZCreate group': 'name'})
         .assign(current_value=lambda row: row['name'])
         # name
@@ -245,7 +245,7 @@ def scalable_capital_portfolio_import(
             header=True,
             index=False,
             index_label=None,
-            encoding='utf8',
+            encoding='utf-8',
         )
 
     else:
@@ -401,7 +401,7 @@ def trade_republic_portfolio_import(
             header=True,
             index=False,
             index_label=None,
-            encoding='utf8',
+            encoding='utf-8',
         )
 
     else:
