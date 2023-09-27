@@ -1,5 +1,5 @@
 ## Neobroker Portfolio Importer
-# Last update: 2023-07-25
+# Last update: 2023-09-04
 
 
 """About:Web-scraping tool to extract and export portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
@@ -15,11 +15,10 @@ globals().clear()
 
 # Import packages
 import os
+from io import StringIO
 import re
 import time
 
-# import lxml
-# import openpyxl
 import pandas as pd
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
@@ -59,7 +58,7 @@ def selenium_webdriver():
     #     webdriver_options.add_argument('--start-maximized')
 
     driver = webdriver.Chrome(
-        service=Service(ChromeDriverManager().install()),
+        service=Service(executable_path=ChromeDriverManager().install()),
         options=webdriver_options,
     )
 
@@ -67,31 +66,17 @@ def selenium_webdriver():
     return driver
 
 
-def selenium_webdriver_quit():
-    # Import or create global variables
-    global driver
-
-    # Driver quit
-    driver.quit()
-
-    # Delete objects
-    del driver
-
-
 def scalable_capital_portfolio_import(
     *,
     login=None,
     password=None,
     transpose=False,
-    directory,
-    file_type='.xlsx',
+    output_directory,
     file_name='Assets.xlsx',
+    file_type='.xlsx',
 ):
-    # Import or create global variables
-    global driver
-
     # Load Selenium WebDriver
-    if 'driver' in vars() or 'driver' in globals():
+    if 'driver' in vars():
         if driver.service.is_connectable() is True:
             pass
 
@@ -99,7 +84,7 @@ def scalable_capital_portfolio_import(
         driver = selenium_webdriver()
 
     # Open website
-    driver.get('https://de.scalable.capital/en/secure-login')
+    driver.get(url='https://de.scalable.capital/en/secure-login')
 
     # Login
     if login is not None and password is not None:
@@ -124,13 +109,13 @@ def scalable_capital_portfolio_import(
                 time.sleep(2)
 
     # Open broker
-    driver.get('https://de.scalable.capital/broker/')
+    driver.get(url='https://de.scalable.capital/broker/')
     time.sleep(5)
 
     # Cookies: Only essentials
     try:
         driver.execute_script(
-            '''return document.querySelector("#usercentrics-root").shadowRoot.querySelector("button[data-testid='uc-deny-all-button']")''',
+            script='''return document.querySelector("#usercentrics-root").shadowRoot.querySelector("button[data-testid='uc-deny-all-button']")''',
         ).click()
 
     except Exception:
@@ -138,7 +123,9 @@ def scalable_capital_portfolio_import(
 
     # Import portfolio
     assets = (
-        pd.read_html(io=driver.page_source, flavor='lxml', encoding='utf-8')[0]
+        pd.read_html(io=StringIO(driver.page_source), flavor='lxml', encoding='utf-8')[
+            0
+        ]
         .rename(columns={'PortfolioSorting A-ZCreate group': 'name'})
         .assign(current_value=lambda row: row['name'])
         # name
@@ -208,7 +195,11 @@ def scalable_capital_portfolio_import(
     # Left join 'assets' with 'stocks_isin'
     assets = (
         assets.merge(
-            stocks_isin.drop_duplicates(subset=None, keep='first', ignore_index=True),
+            right=stocks_isin.drop_duplicates(
+                subset=None,
+                keep='first',
+                ignore_index=True,
+            ),
             how='left',
             on=['name'],
             indicator=False,
@@ -222,12 +213,17 @@ def scalable_capital_portfolio_import(
 
     # Transpose
     if transpose is True:
+        assets = pd.pivot_table(
+            data=assets,
+            values=['current_value'],
+            columns=['name', 'isin'],
+        )
         assets = assets.set_index(keys='name', drop=True, append=False).transpose()
 
     # Save
     if file_type == '.xlsx':
         assets.to_excel(
-            excel_writer=os.path.join(directory, file_name),
+            excel_writer=os.path.join(output_directory, file_name),
             sheet_name='Stocks',
             na_rep='',
             header=True,
@@ -239,7 +235,7 @@ def scalable_capital_portfolio_import(
 
     elif file_type == '.csv':
         assets.to_csv(
-            path_or_buf=os.path.join(directory, file_name),
+            path_or_buf=os.path.join(output_directory, file_name),
             sep=',',
             na_rep='',
             header=True,
@@ -260,15 +256,12 @@ def trade_republic_portfolio_import(
     login,
     password,
     transpose=False,
-    directory,
-    file_type='.xlsx',
+    output_directory,
     file_name='Assets.xlsx',
+    file_type='.xlsx',
 ):
-    # Import or create global variables
-    global driver
-
     # Load Selenium WebDriver
-    if 'driver' in vars() or 'driver' in globals():
+    if 'driver' in vars():
         if driver.service.is_connectable() is True:
             pass
 
@@ -276,7 +269,7 @@ def trade_republic_portfolio_import(
         driver = selenium_webdriver()
 
     # Open website
-    driver.get('https://app.traderepublic.com')
+    driver.get(url='https://app.traderepublic.com')
 
     # Cookies: Accept Selected
     driver.find_element(
@@ -319,7 +312,7 @@ def trade_republic_portfolio_import(
             time.sleep(2)
 
     # Open broker
-    driver.get('https://app.traderepublic.com/portfolio')
+    driver.get(url='https://app.traderepublic.com/portfolio')
     time.sleep(5)
 
     # Change view
@@ -378,12 +371,13 @@ def trade_republic_portfolio_import(
 
     # Transpose
     if transpose is True:
+        # assets = pd.pivot_table(data=assets, values=['current_value'], columns=['name', 'isin', 'shares'])
         assets = assets.set_index(keys='name', drop=True, append=False).transpose()
 
     # Save
     if file_type == '.xlsx':
         assets.to_excel(
-            excel_writer=os.path.join(directory, file_name),
+            excel_writer=os.path.join(output_directory, file_name),
             sheet_name='Stocks',
             na_rep='',
             header=True,
@@ -395,7 +389,7 @@ def trade_republic_portfolio_import(
 
     elif file_type == '.csv':
         assets.to_csv(
-            path_or_buf=os.path.join(directory, file_name),
+            path_or_buf=os.path.join(output_directory, file_name),
             sep=',',
             na_rep='',
             header=True,
@@ -419,18 +413,20 @@ scalable_capital_portfolio_import(
     login=None,
     password=None,
     transpose=True,
-    directory=os.path.join(os.path.expanduser('~'), 'Downloads'),
-    file_type='.xlsx',
+    output_directory=os.path.join(os.path.expanduser('~'), 'Downloads'),
     file_name='Assets Scalable Capital.xlsx',
+    file_type='.xlsx',
 )
 
 trade_republic_portfolio_import(
     login=None,
     password=None,
     transpose=True,
-    directory=os.path.join(os.path.expanduser('~'), 'Downloads'),
-    file_type='.xlsx',
+    output_directory=os.path.join(os.path.expanduser('~'), 'Downloads'),
     file_name='Assets Trade Republic.xlsx',
+    file_type='.xlsx',
 )
 
-selenium_webdriver_quit()
+# Quit WebDriver
+if 'driver' in vars():
+    driver.quit()
