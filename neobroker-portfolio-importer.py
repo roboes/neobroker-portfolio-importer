@@ -1,5 +1,5 @@
 ## Neobroker Portfolio Importer
-# Last update: 2023-09-04
+# Last update: 2023-10-15
 
 
 """About:Web-scraping tool to extract and export portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
@@ -108,10 +108,6 @@ def scalable_capital_portfolio_import(
             except NoSuchElementException:
                 time.sleep(2)
 
-    # Open broker
-    driver.get(url='https://de.scalable.capital/broker/')
-    time.sleep(5)
-
     # Cookies: Only essentials
     try:
         driver.execute_script(
@@ -120,6 +116,10 @@ def scalable_capital_portfolio_import(
 
     except Exception:
         pass
+
+    # Open broker
+    driver.get(url='https://de.scalable.capital/broker/')
+    time.sleep(5)
 
     # Import portfolio
     assets = (
@@ -213,11 +213,7 @@ def scalable_capital_portfolio_import(
 
     # Transpose
     if transpose is True:
-        assets = pd.pivot_table(
-            data=assets,
-            values=['current_value'],
-            columns=['name', 'isin'],
-        )
+        # assets = pd.pivot_table(data=assets, values=['current_value'], columns=['name', 'isin'])
         assets = assets.set_index(keys='name', drop=True, append=False).transpose()
 
     # Save
