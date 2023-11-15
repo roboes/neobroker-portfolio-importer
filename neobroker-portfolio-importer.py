@@ -2,7 +2,7 @@
 # Last update: 2023-10-15
 
 
-"""About: Web-scraping tool to extract and export portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
+"""About: Web-scraping tool to extract and export current portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
 
 
 ###############
