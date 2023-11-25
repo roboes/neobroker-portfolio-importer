@@ -1,8 +1,8 @@
 ## Neobroker Portfolio Importer
-# Last update: 2023-10-15
+# Last update: 2023-11-25
 
 
-"""About:Web-scraping tool to extract and export portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
+"""About: Web-scraping tool to extract and export current portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
 
 
 ###############
@@ -175,7 +175,7 @@ def scalable_capital_portfolio_import(
 
         # name
         d['name'] = portfolio.find_element(by=By.XPATH, value='.//span[@class]').text
-        d['name'] = re.sub(pattern=r'\u00ae', repl=r'', string=d['name'])
+        d['name'] = re.sub(pattern=r'\u00ae', repl=r'', string=d['name'], flags=0)
 
         # isin
         d['isin'] = portfolio.find_element(by=By.XPATH, value='.//img').get_attribute(
@@ -185,6 +185,7 @@ def scalable_capital_portfolio_import(
             pattern=r'(^.*\/performance\/)([A-Z]{2}[a-zA-Z0-9_]{10})(\/.*)',
             repl=r'\2',
             string=d['isin'],
+            flags=0,
         )
 
         data.append(d)
@@ -353,6 +354,7 @@ def trade_republic_portfolio_import(
             pattern=r' \u20ac',
             repl=r'',
             string=d['current_value'],
+            flags=0,
         )
         d['current_value'] = float(d['current_value'])
 
