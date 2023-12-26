@@ -1,5 +1,5 @@
 ## Neobroker Portfolio Importer
-# Last update: 2023-11-25
+# Last update: 2023-12-26
 
 
 """About: Web-scraping tool to extract and export current portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
@@ -70,10 +70,8 @@ def scalable_capital_portfolio_import(
     *,
     login=None,
     password=None,
-    transpose=False,
-    output_directory,
-    file_name='Assets.xlsx',
     file_type='.xlsx',
+    output_path=None,
 ):
     # Load Selenium WebDriver
     if 'driver' in vars():
@@ -143,6 +141,8 @@ def scalable_capital_portfolio_import(
                 regex=True,
             ),
         )
+        # shares
+        .assign(shares='')
         # current_value
         .assign(
             current_value=lambda row: row['current_value'].replace(
@@ -158,8 +158,8 @@ def scalable_capital_portfolio_import(
                 regex=True,
             ),
         )
-        .astype(dtype={'current_value': 'float'})
-        .filter(items=['name', 'current_value'])
+        # .astype(dtype={'current_value': 'float'})
+        .filter(items=['name', 'shares', 'current_value'])
     )
 
     # Get ISIN
@@ -194,45 +194,63 @@ def scalable_capital_portfolio_import(
     stocks_isin = pd.DataFrame(data=data, index=None, dtype=None)
 
     # Left join 'assets' with 'stocks_isin'
+    assets = assets.merge(
+        right=stocks_isin.drop_duplicates(
+            subset=None,
+            keep='first',
+            ignore_index=True,
+        ),
+        how='left',
+        on=['name'],
+        indicator=False,
+    )
+
+    # Metadata
     assets = (
-        assets.merge(
-            right=stocks_isin.drop_duplicates(
-                subset=None,
-                keep='first',
-                ignore_index=True,
-            ),
-            how='left',
-            on=['name'],
-            indicator=False,
+        assets.assign(date=pd.Timestamp.now().date())
+        .assign(type='Investments')
+        .assign(financial_institution='Scalable Capital')
+        .filter(
+            items=[
+                'date',
+                'type',
+                'financial_institution',
+                'name',
+                'isin',
+                'shares',
+                'current_value',
+            ],
         )
-        .filter(items=['name', 'isin', 'current_value'])
-        .sort_values(by=['isin'], ignore_index=True)
+        .sort_values(by=['date', 'financial_institution', 'isin'], ignore_index=True)
     )
 
     # Delete objects
     del stocks_isin
 
-    # Transpose
-    if transpose is True:
-        # assets = pd.pivot_table(data=assets, values=['current_value'], columns=['name', 'isin'])
-        assets = assets.set_index(keys='name', drop=True, append=False).transpose()
-
     # Save
-    if file_type == '.xlsx':
-        assets.to_excel(
-            excel_writer=os.path.join(output_directory, file_name),
-            sheet_name='Stocks',
-            na_rep='',
-            header=True,
-            index=False,
-            index_label=None,
-            freeze_panes=(1, 0),
-            engine='openpyxl',
-        )
+    if file_type == '.xlsx' and output_path is not None:
+        with pd.ExcelWriter(
+            path=output_path,
+            date_format='YYYY-MM-DD',
+            datetime_format='YYYY-MM-DD HH:MM:SS',
+            engine='xlsxwriter',
+            engine_kwargs={
+                'options': {'strings_to_formulas': False, 'strings_to_urls': False},
+            },
+        ) as writer:
+            assets.to_excel(
+                excel_writer=writer,
+                sheet_name='Portfolio',
+                na_rep='',
+                header=True,
+                index=False,
+                index_label=None,
+                freeze_panes=(1, 0),
+            )
 
-    elif file_type == '.csv':
+    elif file_type == '.csv' and output_path is not None:
         assets.to_csv(
-            path_or_buf=os.path.join(output_directory, file_name),
+            path_or_buf=output_path,
             sep=',',
             na_rep='',
             header=True,
@@ -250,12 +268,10 @@ def scalable_capital_portfolio_import(
 
 def trade_republic_portfolio_import(
     *,
-    login,
-    password,
-    transpose=False,
-    output_directory,
-    file_name='Assets.xlsx',
+    login=None,
+    password=None,
     file_type='.xlsx',
+    output_path=None,
 ):
     # Load Selenium WebDriver
     if 'driver' in vars():
@@ -361,33 +377,53 @@ def trade_republic_portfolio_import(
         data.append(d)
 
     # Create DataFrame
-    assets = (
-        pd.DataFrame(data=data, index=None, dtype=None)
-        .filter(items=['name', 'isin', 'shares', 'current_value'])
-        .sort_values(by=['isin'], ignore_index=True)
+    assets = pd.DataFrame(data=data, index=None, dtype=None).filter(
+        items=['name', 'isin', 'shares', 'current_value'],
     )
 
-    # Transpose
-    if transpose is True:
-        # assets = pd.pivot_table(data=assets, values=['current_value'], columns=['name', 'isin', 'shares'])
-        assets = assets.set_index(keys='name', drop=True, append=False).transpose()
+    # Metadata
+    assets = (
+        assets.assign(date=pd.Timestamp.now().date())
+        .assign(type='Investments')
+        .assign(financial_institution='Trade Republic')
+        .filter(
+            items=[
+                'date',
+                'type',
+                'financial_institution',
+                'name',
+                'isin',
+                'shares',
+                'current_value',
+            ],
+        )
+        .sort_values(by=['date', 'financial_institution', 'isin'], ignore_index=True)
+    )
 
     # Save
-    if file_type == '.xlsx':
-        assets.to_excel(
-            excel_writer=os.path.join(output_directory, file_name),
-            sheet_name='Stocks',
-            na_rep='',
-            header=True,
-            index=False,
-            index_label=None,
-            freeze_panes=(1, 0),
-            engine='openpyxl',
-        )
+    if file_type == '.xlsx' and output_path is not None:
+        with pd.ExcelWriter(
+            path=output_path,
+            date_format='YYYY-MM-DD',
+            datetime_format='YYYY-MM-DD HH:MM:SS',
+            engine='xlsxwriter',
+            engine_kwargs={
+                'options': {'strings_to_formulas': False, 'strings_to_urls': False},
+            },
+        ) as writer:
+            assets.to_excel(
+                excel_writer=writer,
+                sheet_name='Portfolio',
+                na_rep='',
+                header=True,
+                index=False,
+                index_label=None,
+                freeze_panes=(1, 0),
+            )
 
-    elif file_type == '.csv':
+    elif file_type == '.csv' and output_path is not None:
         assets.to_csv(
-            path_or_buf=os.path.join(output_directory, file_name),
+            path_or_buf=output_path,
             sep=',',
             na_rep='',
             header=True,
@@ -410,19 +446,23 @@ def trade_republic_portfolio_import(
 scalable_capital_portfolio_import(
     login=None,
     password=None,
-    transpose=True,
-    output_directory=os.path.join(os.path.expanduser('~'), 'Downloads'),
-    file_name='Assets Scalable Capital.xlsx',
     file_type='.xlsx',
+    output_path=os.path.join(
+        os.path.expanduser('~'),
+        'Downloads',
+        'Assets Scalable Capital.xlsx',
+    ),
 )
 
 trade_republic_portfolio_import(
     login=None,
     password=None,
-    transpose=True,
-    output_directory=os.path.join(os.path.expanduser('~'), 'Downloads'),
-    file_name='Assets Trade Republic.xlsx',
     file_type='.xlsx',
+    output_path=os.path.join(
+        os.path.expanduser('~'),
+        'Downloads',
+        'Assets Trade Republic.xlsx',
+    ),
 )
 
 # Quit WebDriver
