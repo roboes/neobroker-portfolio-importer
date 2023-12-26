@@ -26,26 +26,24 @@ python -m pip install lxml openpyxl pandas selenium webdriver-manager
 
 ### scalable_capital_portfolio_import
 ```.py
-scalable_capital_portfolio_import(login=None, password=None, transpose=False, file_type='.xlsx', file_name='Assets Scalable Capital.xlsx')
+scalable_capital_portfolio_import(login=None, password=None, file_type='.xlsx', output_path=os.path.join(os.path.expanduser('~'), 'Downloads', 'Assets Scalable Capital.xlsx'))
 ```
 
 <br>
 
 ### trade_republic_portfolio_import
 ```.py
-trade_republic_portfolio_import(login=None, password=None, transpose=False, file_type='.xlsx', file_name='Assets Trade Republic.xlsx')
+trade_republic_portfolio_import(login=None, password=None, file_type='.xlsx', output_path=os.path.join(os.path.expanduser('~'), 'Downloads', 'Assets Trade Republic.xlsx'))
 ```
 
 #### Description
-- Scraps and imports portfolio asset information from Scalable Capital and Trade Republic.
+- Scraps and imports portfolio asset information from Scalable Capital and Trade Republic. Please note that for now it is not possible to retrieve the number os shares for Scalable Capital assets.
 
 #### Parameters
 - `login`: *str*, default: *None*. If defined (e.g. `login = 'email@email.com'`), login information is automatically filled; otherwise, user needs to manually add them once the WebDriver initiates.
 - `password`: *str*, default: *None*. If defined (e.g. `password = '12345'`), password information is automatically filled; otherwise, user needs to manually add them once the WebDriver initiates.
-- `transpose`: *bool*, default: *False*. If *True*, imported assets dataset is transposed.
-- `path`: *path object*, default user's *'Downloads'* folder.
 - `file_type`: *str*, options: *'.xlsx'*, *'.csv'* and *None*, default: *'.xlsx'*. If *None*, imported assets dataset is copied to the system clipboard.
-- `file_name`: *str*, default: *'Assets Scalable Capital.xlsx'* (for `scalable_capital_portfolio_import`) and *'Assets Trade Republic.xlsx'* (for `trade_republic_portfolio_import`).
+- `output_path`: *path object*, default: *None*. If *None*, imported assets dataset is copied to the system clipboard.
 
 <br>
 
