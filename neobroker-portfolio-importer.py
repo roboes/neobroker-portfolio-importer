@@ -43,6 +43,7 @@ def selenium_webdriver():
     webdriver_options.add_experimental_option(
         'prefs',
         {
+            'intl.accept_languages': 'en_us',
             'enable_do_not_track': True,
             # 'download.default_directory': os.path.join(os.path.expanduser('~'), 'Downloads'),
             'download.prompt_for_download': False,
