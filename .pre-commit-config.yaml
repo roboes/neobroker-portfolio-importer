@@ -1,5 +1,5 @@
 ## Pre-commit configuration
-# Last update: 2024-01-25
+# Last update: 2024-01-31
 
 # Save this file to '/.pre-commit-config.yaml'
 
@@ -64,13 +64,13 @@ repos:
       - id: prettier
 
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.38.0
+    rev: v0.39.0
     hooks:
       - id: markdownlint
         args: ["--disable", "MD013"]
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.1.14
+    rev: v0.1.15
     hooks:
       - id: ruff
         args: [
@@ -85,7 +85,7 @@ repos:
       - id: add-trailing-comma
 
   - repo: https://github.com/psf/black
-    rev: 23.12.1 # Without leading 'v'
+    rev: 24.1.1 # Without leading 'v'
     hooks:
       - id: black
         args: [--skip-string-normalization]
@@ -161,7 +161,10 @@ repos:
       - id: codespell
         # exclude: "dkb-bank-transactions.py"
         args: # The --ignore-words-list argument has a bug where it needs to be lowercase, see: https://github.com/codespell-project/codespell/issues/1390
-          [--ignore-words-list, "als,ges,ist,nax,produkt,sie"]
+          [
+            --ignore-words-list,
+            "als,ges,ist,nax,oder,produkt,ressource,sie,termine",
+          ]
 
 default_language_version:
   python: python3
