@@ -1,5 +1,5 @@
 ## Neobroker Portfolio Importer
-# Last update: 2023-12-26
+# Last update: 2024-01-24
 
 
 """About: Web-scraping tool to extract and export current portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
@@ -22,9 +22,7 @@ import time
 import pandas as pd
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
-from webdriver_manager.chrome import ChromeDriverManager
 
 
 # Set working directory
@@ -43,6 +41,7 @@ def selenium_webdriver():
     webdriver_options.add_experimental_option(
         'prefs',
         {
+            'intl.accept_languages': 'en_us',
             'enable_do_not_track': True,
             # 'download.default_directory': os.path.join(os.path.expanduser('~'), 'Downloads'),
             'download.prompt_for_download': False,
@@ -57,10 +56,7 @@ def selenium_webdriver():
     #     webdriver_options.add_argument('window-size=1400,900')
     #     webdriver_options.add_argument('--start-maximized')
 
-    driver = webdriver.Chrome(
-        service=Service(executable_path=ChromeDriverManager().install()),
-        options=webdriver_options,
-    )
+    driver = webdriver.Chrome(options=webdriver_options)
 
     # Return objects
     return driver
