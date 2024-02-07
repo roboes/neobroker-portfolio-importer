@@ -64,3 +64,7 @@ selenium_webdriver_quit()
 #### Parameters
 
 - None.
+
+# See also
+
+[pytr](https://github.com/marzzzello/pytr): Use Trade Republic in terminal.
