@@ -48,6 +48,7 @@ trade_republic_portfolio_import(login=None, password=None, file_type='.xlsx', ou
 - `password`: _str_, default: _None_. If defined (e.g. `password = '12345'`), password information is automatically filled; otherwise, user needs to manually add them once the WebDriver initiates.
 - `file_type`: _str_, options: _'.xlsx'_, _'.csv'_ and _None_, default: _'.xlsx'_. If _None_, imported assets dataset is copied to the system clipboard.
 - `output_path`: _path object_, default: _None_. If _None_, imported assets dataset is copied to the system clipboard.
+- `return_df`: _bool_, default: _False_. Returns DataFrame from function.
 
 <br>
 
