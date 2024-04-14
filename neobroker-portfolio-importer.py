@@ -1,5 +1,5 @@
 ## Neobroker Portfolio Importer
-# Last update: 2024-01-24
+# Last update: 2024-04-14
 
 
 """About: Web-scraping tool to extract and export current portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
@@ -15,7 +15,6 @@ globals().clear()
 
 # Import packages
 import os
-from io import StringIO
 import re
 import time
 
@@ -43,7 +42,7 @@ if pd.__version__ >= '1.5.0' and pd.__version__ < '3.0.0':
 def selenium_webdriver():
     # WebDriver options
     webdriver_options = webdriver.ChromeOptions()
-    webdriver_options.page_load_strategy = 'normal'
+    webdriver_options.page_load_strategy = 'eager'
     webdriver_options.add_experimental_option(
         'prefs',
         {
@@ -74,6 +73,7 @@ def scalable_capital_portfolio_import(
     password=None,
     file_type='.xlsx',
     output_path=None,
+    return_df=False,
 ):
     # Load Selenium WebDriver
     if 'driver' in vars():
@@ -109,6 +109,7 @@ def scalable_capital_portfolio_import(
                 time.sleep(2)
 
     # Cookies: Only essentials
+    time.sleep(3)
     try:
         driver.execute_script(
             script='''return document.querySelector("#usercentrics-root").shadowRoot.querySelector("button[data-testid='uc-deny-all-button']")''',
@@ -121,39 +122,87 @@ def scalable_capital_portfolio_import(
     driver.get(url='https://de.scalable.capital/broker/')
     time.sleep(5)
 
+    # Trading venues closed
+    try:
+        driver.find_element(
+            by=By.XPATH,
+            value='.//button[contains(text(), "Close")]',
+        ).click()
+
+    except Exception:
+        pass
+
+    # Security lists ("Portfolio" and "Watchlist")
+    # security_lists = driver.find_elements(by=By.XPATH, value='.//section[@aria-label="Security list"]//header//div//h2')
+
+    # Get only security lists for "Portfolio"
+    time.sleep(3)
+    parent_section = driver.find_element(
+        By.XPATH,
+        value='.//section[@aria-label="Security list"]',
+    )
+
+    # Get 'asset_names' and 'current_values'
+    elements = parent_section.find_elements(
+        by=By.XPATH,
+        value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[@role="row"]//div[@role="table"]',
+    )
+
+    # Create empty lists
+    asset_names = []
+    current_values = []
+
+    for element in elements:
+        # Split the text content by newline characters
+        element = element.text.split('\n')
+
+        asset_names.append(element[0])
+        current_values.append(element[1])
+
+    # Delete objects
+    del element, elements
+
+    # Get 'isin_codes'
+    elements = parent_section.find_elements(
+        by=By.XPATH,
+        value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[@role="row"]//a',
+    )
+
+    # Create empty list
+    isin_codes = []
+
+    for element in elements:
+        isin_codes.append(element.get_attribute('href'))
+
+    # Delete objects
+    del element, elements, parent_section
+
     # Import portfolio
-    assets = (
-        pd.read_html(io=StringIO(driver.page_source), flavor='lxml', encoding='utf-8')[
-            0
-        ]
-        .rename(columns={'PortfolioSorting A-ZCreate group': 'name'})
-        .assign(current_value=lambda row: row['name'])
-        # name
-        .assign(
-            name=lambda row: row['name'].replace(
-                to_replace=r'(^.*)(\u20ac.*)',
-                value=r'\1',
-                regex=True,
-            ),
-        )
-        .assign(
-            name=lambda row: row['name'].replace(
-                to_replace=r'\u00ae',
-                value=r'',
-                regex=True,
-            ),
+    assets_df = (
+        pd.DataFrame(
+            data={
+                'asset_name': asset_names,
+                'isin_code': isin_codes,
+                'current_value': current_values,
+            },
+            index=None,
+            dtype=None,
         )
         # shares
         .assign(shares='')
         # current_value
         .assign(
+            isin_code=lambda row: row['isin_code'].replace(
+                to_replace=r'https://de.scalable.capital/broker/security\?isin=',
+                value=r'',
+                regex=True,
+            ),
             current_value=lambda row: row['current_value'].replace(
                 to_replace=r'(^.*\u20ac)([0-9]+,[0-9]+\.[0-9]+|[0-9]+\.[0-9]+)(.*)?',
                 value=r'\2',
                 regex=True,
             ),
-        )
-        .assign(
+        ).assign(
             current_value=lambda row: row['current_value'].replace(
                 to_replace=r',',
                 value=r'',
@@ -161,55 +210,15 @@ def scalable_capital_portfolio_import(
             ),
         )
         # .astype(dtype={'current_value': 'float'})
-        .filter(items=['name', 'shares', 'current_value'])
+        .filter(items=['asset_name', 'isin_code', 'shares', 'current_value'])
     )
 
-    # Get ISIN
-    portfolio_list = driver.find_elements(
-        by=By.XPATH,
-        value='//div[@class="MuiTableContainer-root"]//tbody[@class="MuiTableBody-root"]//tr[starts-with(@class, "MuiTableRow-root jss")]',
-    )
-
-    data = []
-
-    for portfolio in portfolio_list:
-        d = {}
-
-        # name
-        d['name'] = portfolio.find_element(by=By.XPATH, value='.//span[@class]').text
-        d['name'] = re.sub(pattern=r'\u00ae', repl=r'', string=d['name'], flags=0)
-
-        # isin
-        d['isin'] = portfolio.find_element(by=By.XPATH, value='.//img').get_attribute(
-            'src',
-        )
-        d['isin'] = re.sub(
-            pattern=r'(^.*\/performance\/)([A-Z]{2}[a-zA-Z0-9_]{10})(\/.*)',
-            repl=r'\2',
-            string=d['isin'],
-            flags=0,
-        )
-
-        data.append(d)
-
-    # Create DataFrame
-    stocks_isin = pd.DataFrame(data=data, index=None, dtype=None)
-
-    # Left join 'assets' with 'stocks_isin'
-    assets = assets.merge(
-        right=stocks_isin.drop_duplicates(
-            subset=None,
-            keep='first',
-            ignore_index=True,
-        ),
-        how='left',
-        on=['name'],
-        indicator=False,
-    )
+    # Delete objects
+    del asset_names, isin_codes, current_values
 
     # Metadata
-    assets = (
-        assets.assign(date=pd.Timestamp.now().date())
+    assets_df = (
+        assets_df.assign(date=pd.Timestamp.now().date())
         .assign(type='Investments')
         .assign(financial_institution='Scalable Capital')
         .filter(
@@ -217,17 +226,17 @@ def scalable_capital_portfolio_import(
                 'date',
                 'type',
                 'financial_institution',
-                'name',
-                'isin',
+                'asset_name',
+                'isin_code',
                 'shares',
                 'current_value',
             ],
         )
-        .sort_values(by=['date', 'financial_institution', 'isin'], ignore_index=True)
+        .sort_values(
+            by=['date', 'financial_institution', 'isin_code'],
+            ignore_index=True,
+        )
     )
-
-    # Delete objects
-    del stocks_isin
 
     # Save
     if file_type == '.xlsx' and output_path is not None:
@@ -240,7 +249,7 @@ def scalable_capital_portfolio_import(
                 'options': {'strings_to_formulas': False, 'strings_to_urls': False},
             },
         ) as writer:
-            assets.to_excel(
+            assets_df.to_excel(
                 excel_writer=writer,
                 sheet_name='Portfolio',
                 na_rep='',
@@ -251,7 +260,7 @@ def scalable_capital_portfolio_import(
             )
 
     elif file_type == '.csv' and output_path is not None:
-        assets.to_csv(
+        assets_df.to_csv(
             path_or_buf=output_path,
             sep=',',
             na_rep='',
@@ -262,10 +271,11 @@ def scalable_capital_portfolio_import(
         )
 
     else:
-        assets.to_clipboard(excel=True, sep=None, index=False)
+        assets_df.to_clipboard(excel=True, sep=None, index=False)
 
     # Return objects
-    return assets
+    if return_df is True:
+        return assets_df
 
 
 def trade_republic_portfolio_import(
@@ -274,6 +284,7 @@ def trade_republic_portfolio_import(
     password=None,
     file_type='.xlsx',
     output_path=None,
+    return_df=False,
 ):
     # Load Selenium WebDriver
     if 'driver' in vars():
@@ -330,6 +341,17 @@ def trade_republic_portfolio_import(
     driver.get(url='https://app.traderepublic.com/portfolio')
     time.sleep(5)
 
+    # The portfolio calculation has been updated
+    try:
+        driver.find_element(
+            by=By.XPATH,
+            value='.//div[@class="focusManager__content"]//button',
+        ).click()
+        time.sleep(2)
+
+    except Exception:
+        pass
+
     # Change view
     driver.find_element(by=By.XPATH, value='//div[@class="dropdownList"]').click()
     driver.find_element(
@@ -348,14 +370,14 @@ def trade_republic_portfolio_import(
     for portfolio in portfolio_list:
         d = {}
 
-        # name
-        d['name'] = portfolio.find_element(
+        # asset_name
+        d['asset_name'] = portfolio.find_element(
             by=By.XPATH,
             value='.//span[@class="instrumentListItem__name"]',
         ).text
 
-        # isin
-        d['isin'] = portfolio.get_attribute('id')
+        # isin_code
+        d['isin_code'] = portfolio.get_attribute('id')
 
         # shares
         d['shares'] = portfolio.find_element(
@@ -379,13 +401,13 @@ def trade_republic_portfolio_import(
         data.append(d)
 
     # Create DataFrame
-    assets = pd.DataFrame(data=data, index=None, dtype=None).filter(
-        items=['name', 'isin', 'shares', 'current_value'],
+    assets_df = pd.DataFrame(data=data, index=None, dtype=None).filter(
+        items=['asset_name', 'isin_code', 'shares', 'current_value'],
     )
 
     # Metadata
-    assets = (
-        assets.assign(date=pd.Timestamp.now().date())
+    assets_df = (
+        assets_df.assign(date=pd.Timestamp.now().date())
         .assign(type='Investments')
         .assign(financial_institution='Trade Republic')
         .filter(
@@ -393,13 +415,16 @@ def trade_republic_portfolio_import(
                 'date',
                 'type',
                 'financial_institution',
-                'name',
-                'isin',
+                'asset_name',
+                'isin_code',
                 'shares',
                 'current_value',
             ],
         )
-        .sort_values(by=['date', 'financial_institution', 'isin'], ignore_index=True)
+        .sort_values(
+            by=['date', 'financial_institution', 'isin_code'],
+            ignore_index=True,
+        )
     )
 
     # Save
@@ -413,7 +438,7 @@ def trade_republic_portfolio_import(
                 'options': {'strings_to_formulas': False, 'strings_to_urls': False},
             },
         ) as writer:
-            assets.to_excel(
+            assets_df.to_excel(
                 excel_writer=writer,
                 sheet_name='Portfolio',
                 na_rep='',
@@ -424,7 +449,7 @@ def trade_republic_portfolio_import(
             )
 
     elif file_type == '.csv' and output_path is not None:
-        assets.to_csv(
+        assets_df.to_csv(
             path_or_buf=output_path,
             sep=',',
             na_rep='',
@@ -435,10 +460,11 @@ def trade_republic_portfolio_import(
         )
 
     else:
-        assets.to_clipboard(excel=True, sep=None, index=False)
+        assets_df.to_clipboard(excel=True, sep=None, index=False)
 
     # Return objects
-    return assets
+    if return_df is True:
+        return assets_df
 
 
 ##############################
@@ -454,6 +480,7 @@ scalable_capital_portfolio_import(
         'Downloads',
         'Assets Scalable Capital.xlsx',
     ),
+    return_df=False,
 )
 
 trade_republic_portfolio_import(
@@ -465,6 +492,7 @@ trade_republic_portfolio_import(
         'Downloads',
         'Assets Trade Republic.xlsx',
     ),
+    return_df=False,
 )
 
 # Quit WebDriver
