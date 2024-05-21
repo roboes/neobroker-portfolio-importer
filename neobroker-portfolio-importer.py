@@ -55,11 +55,12 @@ def selenium_webdriver():
     )
 
     # if sys.platform in {'linux', 'linux2'}:
-    #     webdriver_options.add_argument('--headless=new')
-    #     webdriver_options.add_argument('--disable-dev-shm-usage')
-    #     webdriver_options.add_argument('--no-sandbox')
-    #     webdriver_options.add_argument('window-size=1400,900')
-    #     webdriver_options.add_argument('--start-maximized')
+    # webdriver_options.add_argument('--headless=new')
+    # webdriver_options.add_argument('--disable-dev-shm-usage')
+    # webdriver_options.add_argument('--no-sandbox')
+    # webdriver_options.add_argument('--user-agent=Mozilla/5.0')
+    # webdriver_options.add_argument('window-size=1920,1080')
+    # webdriver_options.add_argument('--start-maximized')
 
     driver = webdriver.Chrome(options=webdriver_options)
 
@@ -112,7 +113,7 @@ def scalable_capital_portfolio_import(
     time.sleep(3)
     try:
         driver.execute_script(
-            script='''return document.querySelector("#usercentrics-root").shadowRoot.querySelector("button[data-testid='uc-deny-all-button']")''',
+            script="""return document.querySelector("#usercentrics-root").shadowRoot.querySelector("button[data-testid='uc-deny-all-button']")""",
         ).click()
 
     except Exception:
@@ -172,7 +173,7 @@ def scalable_capital_portfolio_import(
     isin_codes = []
 
     for element in elements:
-        isin_codes.append(element.get_attribute('href'))
+        isin_codes.append(element.get_attribute(name='href'))
 
     # Delete objects
     del element, elements, parent_section
@@ -202,7 +203,8 @@ def scalable_capital_portfolio_import(
                 value=r'\2',
                 regex=True,
             ),
-        ).assign(
+        )
+        .assign(
             current_value=lambda row: row['current_value'].replace(
                 to_replace=r',',
                 value=r'',
@@ -377,7 +379,7 @@ def trade_republic_portfolio_import(
         ).text
 
         # isin_code
-        d['isin_code'] = portfolio.get_attribute('id')
+        d['isin_code'] = portfolio.get_attribute(name='id')
 
         # shares
         d['shares'] = portfolio.find_element(
