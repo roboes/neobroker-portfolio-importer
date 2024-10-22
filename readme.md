@@ -40,7 +40,7 @@ trade_republic_portfolio_import(login=None, password=None, file_type='.xlsx', ou
 
 #### Description
 
-- Scraps and imports portfolio asset information from Scalable Capital and Trade Republic. Please note that for now it is not possible to retrieve the number os shares for Scalable Capital assets.
+- Scraps and imports portfolio asset information from Scalable Capital and Trade Republic.
 
 #### Parameters
 

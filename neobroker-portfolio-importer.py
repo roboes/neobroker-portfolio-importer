@@ -1,5 +1,5 @@
 ## Neobroker Portfolio Importer
-# Last update: 2024-07-31
+# Last update: 2024-10-22
 
 
 """About: Web-scraping tool to extract and export current portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
@@ -22,6 +22,8 @@ import pandas as pd
 from selenium import webdriver
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 # Settings
@@ -39,31 +41,59 @@ if pd.__version__ >= '1.5.0' and pd.__version__ < '3.0.0':
 ###########
 
 
-def selenium_webdriver():
+def selenium_webdriver(*, web_browser='chrome'):
     # WebDriver options
-    webdriver_options = webdriver.ChromeOptions()
-    webdriver_options.page_load_strategy = 'eager'
-    webdriver_options.add_argument('--disable-search-engine-choice-screen')
-    webdriver_options.add_experimental_option(
-        'prefs',
-        {
-            'intl.accept_languages': 'en_us',
-            'enable_do_not_track': True,
-            # 'download.default_directory': os.path.join(os.path.expanduser('~'), 'Downloads'),
-            'download.prompt_for_download': False,
-            'profile.default_content_setting_values.automatic_downloads': True,
-        },
-    )
+    if web_browser == 'chrome':
+        webdriver_options = webdriver.ChromeOptions()
+        webdriver_options.page_load_strategy = 'eager'
+        webdriver_options.add_argument('--disable-search-engine-choice-screen')
+        webdriver_options.add_argument('--disable-javascript')
+        webdriver_options.add_experimental_option(
+            'prefs',
+            {
+                'intl.accept_languages': 'en_us',
+                'enable_do_not_track': True,
+                # 'download.default_directory': os.path.join(os.path.expanduser('~'), 'Downloads'),
+                'download.prompt_for_download': False,
+                'profile.default_content_setting_values.automatic_downloads': True,
+            },
+        )
 
-    # if sys.platform in {'linux', 'linux2'}:
-    # webdriver_options.add_argument('--headless=new')
-    # webdriver_options.add_argument('--disable-dev-shm-usage')
-    # webdriver_options.add_argument('--no-sandbox')
-    # webdriver_options.add_argument('--user-agent=Mozilla/5.0')
-    # webdriver_options.add_argument('window-size=1920,1080')
-    # webdriver_options.add_argument('--start-maximized')
+        # if sys.platform in {'linux', 'linux2'}:
+        # webdriver_options.add_argument('--headless=new')
+        # webdriver_options.add_argument('--disable-dev-shm-usage')
+        # webdriver_options.add_argument('--no-sandbox')
+        # webdriver_options.add_argument('--user-agent=Mozilla/5.0')
+        # webdriver_options.add_argument('window-size=1920,1080')
+        # webdriver_options.add_argument('--start-maximized')
 
-    driver = webdriver.Chrome(options=webdriver_options)
+        driver = webdriver.Chrome(options=webdriver_options)
+
+    if web_browser == 'firefox':
+        webdriver_options = webdriver.FirefoxOptions()
+        webdriver_options.page_load_strategy = 'eager'
+        webdriver_options.set_preference('javascript.enabled', False)
+        webdriver_options.set_preference('intl.accept_languages', 'en_us')
+        webdriver_options.set_preference('privacy.donottrackheader.enabled', True)
+        webdriver_options.set_preference('browser.download.manager.showWhenStarting', False)
+        webdriver_options.set_preference('browser.download.dir', os.path.join(os.path.expanduser('~'), 'Downloads'))
+        webdriver_options.set_preference('browser.helperApps.neverAsk.saveToDisk', 'application/octet-stream')
+        webdriver_options.set_preference('browser.download.folderList', 2)
+
+        # if sys.platform in {'linux', 'linux2'}:
+        # webdriver_options.add_argument('--headless')
+        # webdriver_options.add_argument('--disable-dev-shm-usage')
+        # webdriver_options.add_argument('--no-sandbox')
+        # webdriver_options.set_preference('general.useragent.override', 'Mozilla/5.0')
+        # webdriver_options.add_argument('--width=1920')
+        # webdriver_options.add_argument('--height=1080')
+        # webdriver_options.add_argument('--start-maximized')
+
+        # Firefox About Profiles - about:profiles
+        # webdriver_options.add_argument('-profile')
+        # webdriver_options.add_argument(os.path.join(os.path.expanduser('~'), 'AppData', 'Roaming', 'Mozilla', 'Firefox', 'Profiles', 'nsp3n4ed.default-release'))
+
+        driver = webdriver.Firefox(options=webdriver_options)
 
     # Return objects
     return driver
@@ -83,7 +113,7 @@ def scalable_capital_portfolio_import(
             pass
 
     else:
-        driver = selenium_webdriver()
+        driver = selenium_webdriver(web_browser='chrome')
 
     # Open website
     driver.get(url='https://de.scalable.capital/en/secure-login')
@@ -179,6 +209,9 @@ def scalable_capital_portfolio_import(
     # Delete objects
     del element, elements, parent_section
 
+    # Clean 'isin_codes'
+    isin_codes = [re.sub(pattern=r'https://de.scalable.capital/broker/security\?isin=', repl=r'', string=isin_code, flags=0) for isin_code in isin_codes]
+
     # Import portfolio
     assets_df = (
         pd.DataFrame(
@@ -190,15 +223,8 @@ def scalable_capital_portfolio_import(
             index=None,
             dtype=None,
         )
-        # shares
-        .assign(shares='')
         # current_value
         .assign(
-            isin_code=lambda row: row['isin_code'].replace(
-                to_replace=r'https://de.scalable.capital/broker/security\?isin=',
-                value=r'',
-                regex=True,
-            ),
             current_value=lambda row: row['current_value'].replace(
                 to_replace=r'(^.*\u20ac)([0-9]+,[0-9]+\.[0-9]+|[0-9]+\.[0-9]+)(.*)?',
                 value=r'\2',
@@ -217,7 +243,28 @@ def scalable_capital_portfolio_import(
     )
 
     # Delete objects
-    del asset_names, isin_codes, current_values
+    del asset_names, current_values
+
+    # shares
+    shares = []
+
+    for isin_code in isin_codes:
+        driver.get(url=f'https://de.scalable.capital/broker/security?isin={isin_code}')
+
+        # Wait until the element with the text "Shares" is found
+        WebDriverWait(driver=driver, timeout=10).until(method=EC.presence_of_element_located(locator=(By.XPATH, '//div[contains(text(), "Shares")]//..//span')))
+
+        share_value = int(driver.find_element(by=By.XPATH, value='//div[contains(text(), "Shares")]//..//span').text)
+        shares.append({'isin_code': isin_code, 'shares': share_value})
+
+    # Create DataFrame
+    shares_df = pd.DataFrame(data=shares, index=None, dtype=None)
+
+    # Left join 'assets_df' with 'shares_df'
+    assets_df = pd.merge(left=assets_df, right=shares_df, how='left', on=['isin_code'], indicator=False).filter(items=['asset_name', 'isin_code', 'shares', 'current_value'])
+
+    # Delete objects
+    del isin_codes, shares, shares_df
 
     # Metadata
     assets_df = (
@@ -295,7 +342,7 @@ def trade_republic_portfolio_import(
             pass
 
     else:
-        driver = selenium_webdriver()
+        driver = selenium_webdriver(web_browser='chrome')
 
     # Open website
     driver.get(url='https://app.traderepublic.com')
