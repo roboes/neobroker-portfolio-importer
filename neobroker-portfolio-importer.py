@@ -1,5 +1,5 @@
 ## Neobroker Portfolio Importer
-# Last update: 2024-10-22
+# Last update: 2025-01-07
 
 
 """About: Web-scraping tool to extract and export current portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
@@ -515,36 +515,3 @@ def trade_republic_portfolio_import(
     # Return objects
     if return_df is True:
         return assets_df
-
-
-##############################
-# Neobroker Portfolio Importer
-##############################
-
-scalable_capital_portfolio_import(
-    login=None,
-    password=None,
-    file_type='.xlsx',
-    output_path=os.path.join(
-        os.path.expanduser('~'),
-        'Downloads',
-        'Assets Scalable Capital.xlsx',
-    ),
-    return_df=False,
-)
-
-trade_republic_portfolio_import(
-    login=None,
-    password=None,
-    file_type='.xlsx',
-    output_path=os.path.join(
-        os.path.expanduser('~'),
-        'Downloads',
-        'Assets Trade Republic.xlsx',
-    ),
-    return_df=False,
-)
-
-# Quit WebDriver
-if 'driver' in vars():
-    driver.quit()
