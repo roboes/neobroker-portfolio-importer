@@ -19,7 +19,7 @@ For security reason, it is recommended to keep the default parameters `login = N
 ## Python dependencies
 
 ```.ps1
-python -m pip install lxml openpyxl pandas selenium webdriver-manager
+python -m pip install lxml openpyxl pandas selenium webdriver-manager xlsxwriter
 ```
 
 ## Functions
