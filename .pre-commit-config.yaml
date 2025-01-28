@@ -1,5 +1,5 @@
 ## Pre-commit configuration
-# Last update: 2025-01-03
+# Last update: 2025-01-24
 
 # Save this file to '/.pre-commit-config.yaml'
 
@@ -51,15 +51,6 @@ repos:
       - id: djcss
       - id: djjs
 
-  # - repo: https://github.com/lorenzwalthert/precommit
-    # rev: v0.4.3.9003
-    # hooks:
-      # - id: no-browser-statement
-      # - id: no-debug-statement
-      # - id: parsable-R
-      # # - id: lintr
-      # - id: style-files
-
   - repo: https://github.com/sqlfluff/sqlfluff
     rev: 3.3.0 # Without leading 'v'
     hooks:
@@ -73,8 +64,17 @@ repos:
       # files: \.(php)$
       # args: [--rules=@PSR12]
 
+  # - repo: https://github.com/lorenzwalthert/precommit
+    # rev: v0.4.3.9003
+    # hooks:
+      # - id: no-browser-statement
+      # - id: no-debug-statement
+      # - id: parsable-R
+      # # - id: lintr
+      # - id: style-files
+
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.9.2
+    rev: v0.9.3
     hooks:
       - id: ruff
         args: ["--fix", "--exit-non-zero-on-fix", "--ignore=B007,B023,C408,D103,E203,E266,E402,E501,F821,S105,S110,S310,SIM105"] # ruff-pre-commit does not recognize these rule selectors: B902,CM001,S410,SCS109,W503,W504
