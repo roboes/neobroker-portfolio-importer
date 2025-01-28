@@ -42,6 +42,10 @@ trade_republic_portfolio_import(login=None, password=None, file_type='.xlsx', ou
 
 - Scraps and imports portfolio asset information from Scalable Capital and Trade Republic.
 
+#### Requirements
+
+- The selected language must be set to `English` for both [Scalable Republic](https://scalable.capital/cockpit/account) and [Trade Republic](https://app.traderepublic.com/settings/appsettings).
+
 #### Parameters
 
 - `login`: _str_, default: _None_. If defined (e.g. `login = 'email@email.com'`), login information is automatically filled; otherwise, user needs to manually add them once the WebDriver initiates.
