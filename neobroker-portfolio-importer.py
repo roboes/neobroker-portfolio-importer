@@ -1,5 +1,5 @@
 ## Neobroker Portfolio Importer
-# Last update: 2024-10-22
+# Last update: 2025-01-28
 
 
 """About: Web-scraping tool to extract and export current portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
@@ -46,6 +46,7 @@ def selenium_webdriver(*, web_browser='chrome'):
     if web_browser == 'chrome':
         webdriver_options = webdriver.ChromeOptions()
         webdriver_options.page_load_strategy = 'eager'
+        webdriver_options.add_argument('--disable-blink-features=AutomationControlled')
         webdriver_options.add_argument('--disable-search-engine-choice-screen')
         webdriver_options.add_argument('--disable-javascript')
         webdriver_options.add_experimental_option(
@@ -72,7 +73,7 @@ def selenium_webdriver(*, web_browser='chrome'):
     if web_browser == 'firefox':
         webdriver_options = webdriver.FirefoxOptions()
         webdriver_options.page_load_strategy = 'eager'
-        webdriver_options.set_preference('javascript.enabled', False)
+        # webdriver_options.set_preference('javascript.enabled', False)
         webdriver_options.set_preference('intl.accept_languages', 'en_us')
         webdriver_options.set_preference('privacy.donottrackheader.enabled', True)
         webdriver_options.set_preference('browser.download.manager.showWhenStarting', False)
@@ -210,7 +211,7 @@ def scalable_capital_portfolio_import(
     del element, elements, parent_section
 
     # Clean 'isin_codes'
-    isin_codes = [re.sub(pattern=r'https://de.scalable.capital/broker/security\?isin=', repl=r'', string=isin_code, flags=0) for isin_code in isin_codes]
+    isin_codes = [re.sub(pattern=r'https://de.scalable.capital/broker/security\?isin=|&portfolioId=.*', repl=r'', string=isin_code, flags=0) for isin_code in isin_codes]
 
     # Import portfolio
     assets_df = (
@@ -224,20 +225,8 @@ def scalable_capital_portfolio_import(
             dtype=None,
         )
         # current_value
-        .assign(
-            current_value=lambda row: row['current_value'].replace(
-                to_replace=r'(^.*\u20ac)([0-9]+,[0-9]+\.[0-9]+|[0-9]+\.[0-9]+)(.*)?',
-                value=r'\2',
-                regex=True,
-            ),
-        )
-        .assign(
-            current_value=lambda row: row['current_value'].replace(
-                to_replace=r',',
-                value=r'',
-                regex=True,
-            ),
-        )
+        .assign(current_value=lambda row: row['current_value'].replace(to_replace=r'(^.*\u20ac)([0-9]+,[0-9]+\.[0-9]+|[0-9]+\.[0-9]+)(.*)?', value=r'\2', regex=True))
+        .assign(current_value=lambda row: row['current_value'].replace(to_replace=r',', value=r'', regex=False))
         # .astype(dtype={'current_value': 'float'})
         .filter(items=['asset_name', 'isin_code', 'shares', 'current_value'])
     )
@@ -254,7 +243,9 @@ def scalable_capital_portfolio_import(
         # Wait until the element with the text "Shares" is found
         WebDriverWait(driver=driver, timeout=10).until(method=EC.presence_of_element_located(locator=(By.XPATH, '//div[contains(text(), "Shares")]//..//span')))
 
-        share_value = int(driver.find_element(by=By.XPATH, value='//div[contains(text(), "Shares")]//..//span').text)
+        share_value = driver.find_element(by=By.XPATH, value='//div[contains(text(), "Shares")]//..//span').text
+        share_value = re.sub(pattern=r'^\u20ac|,', repl=r'', string=share_value, flags=0)
+        share_value = float(share_value)
         shares.append({'isin_code': isin_code, 'shares': share_value})
 
     # Create DataFrame
@@ -358,16 +349,10 @@ def trade_republic_portfolio_import(
         # Login
         driver.find_element(by=By.ID, value='loginPhoneNumber__input').send_keys(login)
         time.sleep(1)
-        driver.find_element(
-            by=By.XPATH,
-            value='.//span[@class="buttonBase__titleWrapper"]',
-        ).click()
+        driver.find_element(by=By.XPATH, value='.//span[@class="buttonBase__titleWrapper"]').click()
 
         # Password
-        pins_input = driver.find_elements(
-            by=By.XPATH,
-            value='.//input[@type="password"]',
-        )
+        pins_input = driver.find_elements(by=By.XPATH, value='.//input[@type="password"]')
         pins = list(password)
 
         for pin_input, pin in zip(pins_input, pins):
@@ -436,16 +421,8 @@ def trade_republic_portfolio_import(
         ).text
 
         # current_value
-        d['current_value'] = portfolio.find_element(
-            by=By.XPATH,
-            value='.//span[@class="instrumentListItem__priceRow"]//span[@class="instrumentListItem__currentPrice"]',
-        ).text
-        d['current_value'] = re.sub(
-            pattern=r' \u20ac',
-            repl=r'',
-            string=d['current_value'],
-            flags=0,
-        )
+        d['current_value'] = portfolio.find_element(by=By.XPATH, value='.//span[@class="instrumentListItem__priceRow"]//span[@class="instrumentListItem__currentPrice"]').text
+        d['current_value'] = re.sub(pattern=r' \u20ac|,', repl=r'', string=d['current_value'], flags=0)
         d['current_value'] = float(d['current_value'])
 
         data.append(d)
@@ -515,36 +492,3 @@ def trade_republic_portfolio_import(
     # Return objects
     if return_df is True:
         return assets_df
-
-
-##############################
-# Neobroker Portfolio Importer
-##############################
-
-scalable_capital_portfolio_import(
-    login=None,
-    password=None,
-    file_type='.xlsx',
-    output_path=os.path.join(
-        os.path.expanduser('~'),
-        'Downloads',
-        'Assets Scalable Capital.xlsx',
-    ),
-    return_df=False,
-)
-
-trade_republic_portfolio_import(
-    login=None,
-    password=None,
-    file_type='.xlsx',
-    output_path=os.path.join(
-        os.path.expanduser('~'),
-        'Downloads',
-        'Assets Trade Republic.xlsx',
-    ),
-    return_df=False,
-)
-
-# Quit WebDriver
-if 'driver' in vars():
-    driver.quit()
