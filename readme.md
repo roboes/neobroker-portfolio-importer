@@ -14,17 +14,17 @@ The code runs locally in the user's machine and imitates, via Chrome WebDriver a
 
 For security reason, it is recommended to keep the default parameters `login = None` and `password = None`.
 
-# Usage
+## Usage
 
-## Python dependencies
+### Python dependencies
 
 ```.ps1
 python -m pip install lxml openpyxl pandas selenium webdriver-manager xlsxwriter
 ```
 
-## Functions
+### Functions
 
-### `scalable_capital_portfolio_import`
+#### `scalable_capital_portfolio_import`
 
 ```.py
 scalable_capital_portfolio_import(login=None, password=None, file_type='.xlsx', output_path=os.path.join(os.path.expanduser('~'), 'Downloads', 'Assets Scalable Capital.xlsx'))
@@ -32,21 +32,21 @@ scalable_capital_portfolio_import(login=None, password=None, file_type='.xlsx', 
 
 <br>
 
-### `trade_republic_portfolio_import`
+#### `trade_republic_portfolio_import`
 
 ```.py
 trade_republic_portfolio_import(login=None, password=None, file_type='.xlsx', output_path=os.path.join(os.path.expanduser('~'), 'Downloads', 'Assets Trade Republic.xlsx'))
 ```
 
-#### Description
+##### Description
 
 - Scraps and imports portfolio asset information from Scalable Capital and Trade Republic.
 
-#### Requirements
+##### Requirements
 
 - The selected language must be set to `English` for both [Scalable Republic](https://scalable.capital/cockpit/account) and [Trade Republic](https://app.traderepublic.com/settings/appsettings).
 
-#### Parameters
+##### Parameters
 
 - `login`: _str_, default: _None_. If defined (e.g. `login = 'email@email.com'`), login information is automatically filled; otherwise, user needs to manually add them once the WebDriver initiates.
 - `password`: _str_, default: _None_. If defined (e.g. `password = '12345'`), password information is automatically filled; otherwise, user needs to manually add them once the WebDriver initiates.
@@ -56,21 +56,21 @@ trade_republic_portfolio_import(login=None, password=None, file_type='.xlsx', ou
 
 <br>
 
-### `selenium_webdriver_quit`
+#### `selenium_webdriver_quit`
 
 ```.py
 selenium_webdriver_quit()
 ```
 
-#### Description
+##### Description
 
 - Terminates the WebDriver session.
 
-#### Parameters
+##### Parameters
 
 - None.
 
-## Code Workflow Example
+### Code Workflow Example
 
 ```.py
 # Scrap, import and save as .csv portfolio asset information from Scalable Capital
@@ -104,6 +104,6 @@ if 'driver' in vars():
     driver.quit()
 ```
 
-# See also
+## See also
 
 [pytr](https://github.com/marzzzello/pytr): Use Trade Republic in terminal.
