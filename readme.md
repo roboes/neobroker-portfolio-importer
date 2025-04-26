@@ -72,6 +72,8 @@ selenium_webdriver_quit()
 
 ### Code Workflow Example
 
+Execute/Import the [`neobroker-portfolio-importer.py`](./neobroker-portfolio-importer.py) script, and then:
+
 ```.py
 # Scrap, import and save as .csv portfolio asset information from Scalable Capital
 scalable_capital_portfolio_import(
