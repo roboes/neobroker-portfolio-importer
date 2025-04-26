@@ -1,5 +1,5 @@
 ## Pre-commit configuration
-# Last update: 2025-01-29
+# Last update: 2025-03-27
 
 # Save this file to '/.pre-commit-config.yaml'
 
@@ -60,7 +60,7 @@ repos:
         # args: ["--disable=MD013", "--disable=MD024", "--disable=MD033", "--disable=MD045"]
 
   - repo: https://github.com/sqlfluff/sqlfluff
-    rev: 3.3.1 # Without leading 'v'
+    rev: 3.4.0 # Without leading 'v'
     hooks:
       - id: sqlfluff-fix
         args: ["--dialect=mysql", "--exclude-rules=ambiguous.column_count, layout.long_lines, references.keywords"]
@@ -82,7 +82,7 @@ repos:
       # - id: style-files
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.9.6
+    rev: v0.11.6
     hooks:
       - id: ruff
         args: ["--fix", "--exit-non-zero-on-fix", "--ignore=B007,B023,C408,D103,E203,E266,E402,E501,F821,S105,S110,S310,SIM105"] # ruff-pre-commit does not recognize these rule selectors: B902,CM001,S410,SCS109,W503,W504
@@ -119,7 +119,7 @@ repos:
     hooks:
       - id: codespell
         exclude: '^data/'
-        args: ["--ignore-words-list=alle,als,deine,dokument,ges,ist,itens,nax,oder,produkt,ressource,ser,sie,tage,termine"] # The --ignore-words-list argument has a bug where it needs to be lowercase, see: https://github.com/codespell-project/codespell/issues/1390
+        args: ["--ignore-words-list=alle,als,datas,deine,dokument,doubleclick,ges,ist,itens,nax,oder,produkt,ressource,ser,sie,tage,termine"] # The --ignore-words-list argument has a bug where it needs to be lowercase, see: https://github.com/codespell-project/codespell/issues/1390
 
 default_language_version:
   python: python3
