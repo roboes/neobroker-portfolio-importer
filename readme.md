@@ -100,10 +100,6 @@ trade_republic_portfolio_import(
     ),
     return_df=False,
 )
-
-# Quit WebDriver
-if 'driver' in vars():
-    driver.quit()
 ```
 
 ## See also
