@@ -1,5 +1,5 @@
 ## Neobroker Portfolio Importer
-# Last update: 2025-01-28
+# Last update: 2025-04-26
 
 
 """About: Web-scraping tool to extract and export current portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
@@ -48,7 +48,10 @@ def selenium_webdriver(*, web_browser='chrome'):
         webdriver_options.page_load_strategy = 'eager'
         webdriver_options.add_argument('--disable-blink-features=AutomationControlled')
         webdriver_options.add_argument('--disable-search-engine-choice-screen')
+        webdriver_options.add_argument('--log-level=3')
         webdriver_options.add_argument('--disable-javascript')
+        webdriver_options.add_argument('window-size=1920,1080')
+        webdriver_options.add_argument('--start-maximized')
         webdriver_options.add_experimental_option(
             'prefs',
             {
@@ -157,10 +160,14 @@ def scalable_capital_portfolio_import(
 
     # Trading venues closed
     try:
-        driver.find_element(
-            by=By.XPATH,
-            value='.//button[contains(text(), "Close")]',
-        ).click()
+        driver.find_element(by=By.XPATH, value='.//button[contains(text(), "Close")]').click()
+
+    except Exception:
+        pass
+
+    # PRIME+ Broker
+    try:
+        driver.find_element(by=By.XPATH, value='//button[@data-testid="close-modal-button"]').click()
 
     except Exception:
         pass
@@ -168,116 +175,125 @@ def scalable_capital_portfolio_import(
     # Security lists ("Portfolio" and "Watchlist")
     # security_lists = driver.find_elements(by=By.XPATH, value='.//section[@aria-label="Security list"]//header//div//h2')
 
-    # Get only security lists for "Portfolio"
-    time.sleep(3)
-    parent_section = driver.find_element(
-        By.XPATH,
-        value='.//section[@aria-label="Security list"]',
-    )
+    # Create empty DataFrame
+    assets_df = pd.DataFrame(data=None, index=None, dtype='str')
 
-    # Get 'asset_names' and 'current_values'
-    elements = parent_section.find_elements(
-        by=By.XPATH,
-        value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[@role="row"]//div[@role="table"]',
-    )
+    for broker in driver.find_elements(by=By.XPATH, value="//*[text()='Broker']"):
+        broker.click()
 
-    # Create empty lists
-    asset_names = []
-    current_values = []
+        time.sleep(2)
 
-    for element in elements:
-        # Split the text content by newline characters
-        element = element.text.split('\n')
+        # Trading venues closed
+        try:
+            driver.find_element(by=By.XPATH, value='.//button[contains(text(), "Close")]').click()
 
-        asset_names.append(element[0])
-        current_values.append(element[1])
+        except Exception:
+            pass
 
-    # Delete objects
-    del element, elements
+        # Portfolio id
+        portfolio_id = re.sub(pattern=r'^.*portfolioId=([^&]+).*$', repl=r'\1', string=driver.current_url, flags=0)
 
-    # Get 'isin_codes'
-    elements = parent_section.find_elements(
-        by=By.XPATH,
-        value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[@role="row"]//a',
-    )
+        portfolio_section = driver.find_element(by=By.XPATH, value="//h2[text()='Portfolio']/..")
 
-    # Create empty list
-    isin_codes = []
+        if 'Start building your portfolio.' in portfolio_section.text:
+            continue
 
-    for element in elements:
-        isin_codes.append(element.get_attribute(name='href'))
+        else:
+            # Get only security lists for "Portfolio"
+            time.sleep(3)
+            parent_section = driver.find_element(
+                By.XPATH,
+                value='.//section[@aria-label="Security list"]',
+            )
 
-    # Delete objects
-    del element, elements, parent_section
+            # Get 'asset_names' and 'current_values'
+            elements = parent_section.find_elements(
+                by=By.XPATH,
+                value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[@role="row"]//div[@role="table"]',
+            )
 
-    # Clean 'isin_codes'
-    isin_codes = [re.sub(pattern=r'https://de.scalable.capital/broker/security\?isin=|&portfolioId=.*', repl=r'', string=isin_code, flags=0) for isin_code in isin_codes]
+            # Create empty lists
+            asset_names = []
+            current_values = []
 
-    # Import portfolio
-    assets_df = (
-        pd.DataFrame(
-            data={
-                'asset_name': asset_names,
-                'isin_code': isin_codes,
-                'current_value': current_values,
-            },
-            index=None,
-            dtype=None,
-        )
-        # current_value
-        .assign(current_value=lambda row: row['current_value'].replace(to_replace=r'(^.*\u20ac)([0-9]+,[0-9]+\.[0-9]+|[0-9]+\.[0-9]+)(.*)?', value=r'\2', regex=True))
-        .assign(current_value=lambda row: row['current_value'].replace(to_replace=r',', value=r'', regex=False))
-        # .astype(dtype={'current_value': 'float'})
-        .filter(items=['asset_name', 'isin_code', 'shares', 'current_value'])
-    )
+            for element in elements:
+                # Split the text content by newline characters
+                element = element.text.split('\n')
 
-    # Delete objects
-    del asset_names, current_values
+                asset_names.append(element[0])
+                current_values.append(element[1])
 
-    # shares
-    shares = []
+            # Delete objects
+            del element, elements
 
-    for isin_code in isin_codes:
-        driver.get(url=f'https://de.scalable.capital/broker/security?isin={isin_code}')
+            # Get 'isin_codes'
+            elements = parent_section.find_elements(
+                by=By.XPATH,
+                value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[@role="row"]//a',
+            )
 
-        # Wait until the element with the text "Shares" is found
-        WebDriverWait(driver=driver, timeout=10).until(method=EC.presence_of_element_located(locator=(By.XPATH, '//div[contains(text(), "Shares")]//..//span')))
+            # Create empty list
+            isin_codes = []
 
-        share_value = driver.find_element(by=By.XPATH, value='//div[contains(text(), "Shares")]//..//span').text
-        share_value = re.sub(pattern=r'^\u20ac|,', repl=r'', string=share_value, flags=0)
-        share_value = float(share_value)
-        shares.append({'isin_code': isin_code, 'shares': share_value})
+            for element in elements:
+                isin_codes.append(element.get_attribute(name='href'))
 
-    # Create DataFrame
-    shares_df = pd.DataFrame(data=shares, index=None, dtype=None)
+            # Delete objects
+            del element, elements, parent_section
 
-    # Left join 'assets_df' with 'shares_df'
-    assets_df = pd.merge(left=assets_df, right=shares_df, how='left', on=['isin_code'], indicator=False).filter(items=['asset_name', 'isin_code', 'shares', 'current_value'])
+            # Clean 'isin_codes'
+            isin_codes = [re.sub(pattern=r'https://de.scalable.capital/broker/security\?isin=|&portfolioId=.*', repl=r'', string=isin_code, flags=0) for isin_code in isin_codes]
 
-    # Delete objects
-    del isin_codes, shares, shares_df
+            # Import portfolio
+            assets_import_df = (
+                pd.DataFrame(data={'asset_name': asset_names, 'isin_code': isin_codes, 'current_value': current_values}, index=None, dtype=None)
+                # current_value
+                .assign(current_value=lambda row: row['current_value'].replace(to_replace=r'(^.*\u20ac)([0-9]+,[0-9]+\.[0-9]+|[0-9]+\.[0-9]+)(.*)?', value=r'\2', regex=True))
+                .assign(current_value=lambda row: row['current_value'].replace(to_replace=r',', value=r'', regex=False))
+                # .astype(dtype={'current_value': 'float'})
+                .filter(items=['asset_name', 'isin_code', 'shares', 'current_value'])
+            )
 
-    # Metadata
-    assets_df = (
-        assets_df.assign(date=pd.Timestamp.now().date())
-        .assign(type='Investments')
-        .assign(financial_institution='Scalable Capital')
-        .filter(
-            items=[
-                'date',
-                'type',
-                'financial_institution',
-                'asset_name',
-                'isin_code',
-                'shares',
-                'current_value',
-            ],
-        )
-        .sort_values(
-            by=['date', 'financial_institution', 'isin_code'],
-            ignore_index=True,
-        )
-    )
+            # Delete objects
+            del asset_names, current_values
+
+            # shares
+            shares = []
+
+            for isin_code in isin_codes:
+                driver.get(url=f'https://de.scalable.capital/broker/security?isin={isin_code}&portfolioId={portfolio_id}')
+
+                # Wait until the element with the text "Shares" is found
+                WebDriverWait(driver=driver, timeout=10).until(method=EC.presence_of_element_located(locator=(By.XPATH, '//div[contains(text(), "Shares")]//..//span')))
+
+                share_value = driver.find_element(by=By.XPATH, value='//div[contains(text(), "Shares")]//..//span').text
+                share_value = re.sub(pattern=r'^\u20ac|,', repl=r'', string=share_value, flags=0)
+                share_value = float(share_value)
+                shares.append({'isin_code': isin_code, 'shares': share_value})
+
+            # Create DataFrame
+            shares_df = pd.DataFrame(data=shares, index=None, dtype=None)
+
+            # Left join 'assets_import_df' with 'shares_df'
+            assets_import_df = pd.merge(left=assets_import_df, right=shares_df, how='left', on=['isin_code'], indicator=False).filter(items=['asset_name', 'isin_code', 'shares', 'current_value'])
+
+            # Delete objects
+            del isin_codes, shares, shares_df
+
+            # Metadata
+            assets_import_df = (
+                assets_import_df.assign(date=pd.Timestamp.now().date())
+                .assign(type='Investments')
+                .assign(financial_institution='Scalable Capital')
+                .filter(items=['date', 'type', 'financial_institution', 'asset_name', 'isin_code', 'shares', 'current_value'])
+                .sort_values(by=['date', 'financial_institution', 'isin_code'], ignore_index=True)
+            )
+
+            # Concatenate DataFrame
+            assets_df = pd.concat(objs=[assets_df, assets_import_df], axis=0, ignore_index=False, sort=False)
+
+            # Delete objects
+            del assets_import_df
 
     # Save
     if file_type == '.xlsx' and output_path is not None:
@@ -313,6 +329,10 @@ def scalable_capital_portfolio_import(
 
     else:
         assets_df.to_clipboard(excel=True, sep=None, index=False)
+
+    # Quit WebDriver
+    if 'driver' in vars():
+        driver.quit()
 
     # Return objects
     if return_df is True:
@@ -488,6 +508,10 @@ def trade_republic_portfolio_import(
 
     else:
         assets_df.to_clipboard(excel=True, sep=None, index=False)
+
+    # Quit WebDriver
+    if 'driver' in vars():
+        driver.quit()
 
     # Return objects
     if return_df is True:
