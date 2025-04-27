@@ -330,6 +330,10 @@ def scalable_capital_portfolio_import(
     else:
         assets_df.to_clipboard(excel=True, sep=None, index=False)
 
+    # Quit WebDriver
+    if 'driver' in vars():
+        driver.quit()
+
     # Return objects
     if return_df is True:
         return assets_df
@@ -504,6 +508,10 @@ def trade_republic_portfolio_import(
 
     else:
         assets_df.to_clipboard(excel=True, sep=None, index=False)
+
+    # Quit WebDriver
+    if 'driver' in vars():
+        driver.quit()
 
     # Return objects
     if return_df is True:
