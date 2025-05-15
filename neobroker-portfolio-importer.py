@@ -1,5 +1,5 @@
 ## Neobroker Portfolio Importer
-# Last update: 2025-04-26
+# Last update: 2025-05-15
 
 
 """About: Web-scraping tool to extract and export current portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
@@ -41,7 +41,7 @@ if pd.__version__ >= '1.5.0' and pd.__version__ < '3.0.0':
 ###########
 
 
-def selenium_webdriver(*, web_browser='chrome'):
+def selenium_webdriver(*, web_browser='chrome', headless=False):
     # WebDriver options
     if web_browser == 'chrome':
         webdriver_options = webdriver.ChromeOptions()
@@ -63,13 +63,13 @@ def selenium_webdriver(*, web_browser='chrome'):
             },
         )
 
-        # if sys.platform in {'linux', 'linux2'}:
-        # webdriver_options.add_argument('--headless=new')
-        # webdriver_options.add_argument('--disable-dev-shm-usage')
-        # webdriver_options.add_argument('--no-sandbox')
-        # webdriver_options.add_argument('--user-agent=Mozilla/5.0')
-        # webdriver_options.add_argument('window-size=1920,1080')
-        # webdriver_options.add_argument('--start-maximized')
+        if headless is True:
+            webdriver_options.add_argument('--headless=new')
+            webdriver_options.add_argument('--disable-dev-shm-usage')
+            webdriver_options.add_argument('--no-sandbox')
+            webdriver_options.add_argument('--user-agent=Mozilla/5.0')
+            webdriver_options.add_argument('window-size=1920,1080')
+            webdriver_options.add_argument('--start-maximized')
 
         driver = webdriver.Chrome(options=webdriver_options)
 
@@ -83,15 +83,17 @@ def selenium_webdriver(*, web_browser='chrome'):
         webdriver_options.set_preference('browser.download.dir', os.path.join(os.path.expanduser('~'), 'Downloads'))
         webdriver_options.set_preference('browser.helperApps.neverAsk.saveToDisk', 'application/octet-stream')
         webdriver_options.set_preference('browser.download.folderList', 2)
+        webdriver_options.add_argument('--height=1080')
+        webdriver_options.add_argument('--start-maximized')
 
-        # if sys.platform in {'linux', 'linux2'}:
-        # webdriver_options.add_argument('--headless')
-        # webdriver_options.add_argument('--disable-dev-shm-usage')
-        # webdriver_options.add_argument('--no-sandbox')
-        # webdriver_options.set_preference('general.useragent.override', 'Mozilla/5.0')
-        # webdriver_options.add_argument('--width=1920')
-        # webdriver_options.add_argument('--height=1080')
-        # webdriver_options.add_argument('--start-maximized')
+        if headless is True:
+            webdriver_options.add_argument('--headless')
+            webdriver_options.add_argument('--disable-dev-shm-usage')
+            webdriver_options.add_argument('--no-sandbox')
+            webdriver_options.set_preference('general.useragent.override', 'Mozilla/5.0')
+            webdriver_options.add_argument('--width=1920')
+            webdriver_options.add_argument('--height=1080')
+            webdriver_options.add_argument('--start-maximized')
 
         # Firefox About Profiles - about:profiles
         # webdriver_options.add_argument('-profile')
