@@ -211,7 +211,7 @@ def scalable_capital_portfolio_import(
             # Get 'asset_names' and 'current_values'
             elements = parent_section.find_elements(
                 by=By.XPATH,
-                value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[@role="row"]//div[@role="table"]',
+                value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[contains(@class, "jss141")]',
             )
 
             # Create empty lists
@@ -231,7 +231,7 @@ def scalable_capital_portfolio_import(
             # Get 'isin_codes'
             elements = parent_section.find_elements(
                 by=By.XPATH,
-                value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[@role="row"]//a',
+                value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[contains(@class, "jss141")]//div//a',
             )
 
             # Create empty list
