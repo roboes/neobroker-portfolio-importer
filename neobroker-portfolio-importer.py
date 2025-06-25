@@ -50,6 +50,7 @@ def selenium_webdriver(*, web_browser='chrome', headless=False):
         webdriver_options.add_argument('--disable-search-engine-choice-screen')
         webdriver_options.add_argument('--log-level=3')
         webdriver_options.add_argument('--disable-javascript')
+        # webdriver_options.ignore_local_proxy_environment_variables()
         webdriver_options.add_argument('window-size=1920,1080')
         webdriver_options.add_argument('--start-maximized')
         webdriver_options.add_experimental_option(
@@ -211,7 +212,7 @@ def scalable_capital_portfolio_import(
             # Get 'asset_names' and 'current_values'
             elements = parent_section.find_elements(
                 by=By.XPATH,
-                value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[@role="row"]//div[@role="table"]',
+                value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[contains(@class, "jss141")]',
             )
 
             # Create empty lists
@@ -231,7 +232,7 @@ def scalable_capital_portfolio_import(
             # Get 'isin_codes'
             elements = parent_section.find_elements(
                 by=By.XPATH,
-                value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[@role="row"]//a',
+                value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[contains(@class, "jss141")]//div//a',
             )
 
             # Create empty list

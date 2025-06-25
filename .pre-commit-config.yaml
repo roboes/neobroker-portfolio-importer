@@ -45,7 +45,7 @@ repos:
       - id: trailing-whitespace
 
   - repo: https://github.com/rtts/djhtml
-    rev: 3.0.7 # Without leading 'v'
+    rev: 3.0.8 # Without leading 'v'
     hooks:
       # - id: djhtml
       - id: djcss
@@ -60,7 +60,7 @@ repos:
         # args: ["--disable=MD013", "--disable=MD024", "--disable=MD033", "--disable=MD045"]
 
   - repo: https://github.com/sqlfluff/sqlfluff
-    rev: 3.4.0 # Without leading 'v'
+    rev: 3.4.1 # Without leading 'v'
     hooks:
       - id: sqlfluff-fix
         args: ["--dialect=mysql", "--exclude-rules=ambiguous.column_count, layout.long_lines, references.keywords"]
@@ -82,7 +82,7 @@ repos:
       # - id: style-files
 
   - repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.11.9
+    rev: v0.12.0
     hooks:
       - id: ruff
         args: ["--fix", "--exit-non-zero-on-fix", "--ignore=B007,B023,C408,D103,E203,E266,E402,E501,F821,S105,S110,S310,SIM105"] # ruff-pre-commit does not recognize these rule selectors: B902,CM001,S410,SCS109,W503,W504
@@ -90,7 +90,7 @@ repos:
         args: ["--line-length=220", "--config", "format.quote-style='single'", "--config", "format.indent-style='space'"]
 
   - repo: https://github.com/asottile/add-trailing-comma
-    rev: v3.1.0
+    rev: v3.2.0
     hooks:
       - id: add-trailing-comma
 
@@ -109,7 +109,7 @@ repos:
       - id: text-unicode-replacement-char
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.19.1
+    rev: v3.20.0
     hooks:
       - id: pyupgrade
         args: ["--py312-plus"]
