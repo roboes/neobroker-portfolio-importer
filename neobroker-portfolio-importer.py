@@ -1,5 +1,5 @@
 ## Neobroker Portfolio Importer
-# Last update: 2025-05-15
+# Last update: 2025-07-20
 
 
 """About: Web-scraping tool to extract and export current portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."""
@@ -204,47 +204,25 @@ def scalable_capital_portfolio_import(
         else:
             # Get only security lists for "Portfolio"
             time.sleep(3)
-            parent_section = driver.find_element(
-                By.XPATH,
-                value='.//section[@aria-label="Security list"]',
-            )
 
-            # Get 'asset_names' and 'current_values'
-            elements = parent_section.find_elements(
-                by=By.XPATH,
-                value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[contains(@class, "jss141")]',
-            )
+            # Get 'asset_names', 'current_values' and 'isin_codes'
+            elements = driver.find_element(by=By.XPATH, value='//div[@aria-label="Portfolio"]//div')
+            elements = elements.find_elements(by=By.TAG_NAME, value='li')
 
-            # Create empty lists
+            ## Create empty lists
             asset_names = []
             current_values = []
-
-            for element in elements:
-                # Split the text content by newline characters
-                element = element.text.split('\n')
-
-                asset_names.append(element[0])
-                current_values.append(element[1])
-
-            # Delete objects
-            del element, elements
-
-            # Get 'isin_codes'
-            elements = parent_section.find_elements(
-                by=By.XPATH,
-                value='.//div[@aria-label="grid"]//div[@role="rowgroup"]//div[contains(@class, "jss141")]//div//a',
-            )
-
-            # Create empty list
             isin_codes = []
 
             for element in elements:
-                isin_codes.append(element.get_attribute(name='href'))
+                asset_names.append(element.find_element(by=By.CSS_SELECTOR, value='div[data-testid="text"]').text.strip())
+                current_values.append(element.find_element(by=By.CSS_SELECTOR, value='div[aria-label="Total value"] span').text.strip())
+                isin_codes.append(element.find_element(by=By.CSS_SELECTOR, value='a').get_attribute('href'))
 
-            # Delete objects
-            del element, elements, parent_section
+            ## Delete objects
+            del element, elements
 
-            # Clean 'isin_codes'
+            ## Clean 'isin_codes'
             isin_codes = [re.sub(pattern=r'https://de.scalable.capital/broker/security\?isin=|&portfolioId=.*', repl=r'', string=isin_code, flags=0) for isin_code in isin_codes]
 
             # Import portfolio
