@@ -1,0 +1,32 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "neobroker-portfolio-importer"
+version = "1.0"
+authors = [{ name="roboes" }]
+readme = {file = "readme.md", content-type = "text/markdown"}
+description = "Web-scraping tool to extract and export current portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."
+requires-python = ">=3.11"
+license = { file = "license" }
+dependencies = [
+    "lxml",
+    "pandas",
+    "selenium",
+    "xlsxwriter",
+]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent"
+]
+
+[project.urls]
+Homepage = "https://github.com/roboes/neobroker-portfolio-importer"
+
+[project.scripts]
+neobroker-portfolio-importer = "neobroker_portfolio_importer:entrypoint"
+
+[tool.setuptools]
+packages = ["neobroker_portfolio_importer"]
