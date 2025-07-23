@@ -12,14 +12,15 @@ This web-scraping tool aims to extract portfolio asset information (such as stoc
 
 The code runs locally in the user's machine and imitates, via Chrome WebDriver and the Selenium library, user's behavior and extracts the assets information from Scalable Capital and Trade Republic. No information is collected and send externally.
 
-For security reason, it is recommended to keep the default parameters `login = None` and `password = None`.
+> [!WARNING]
+> For security reason, it is recommended to keep the default parameters `login = None` and `password = None`.
 
 ## Usage
 
-### Python dependencies
+### Installation
 
 ```.ps1
-python -m pip install lxml openpyxl pandas selenium webdriver-manager xlsxwriter
+python -m pip install "git+https://github.com/roboes/neobroker-portfolio-importer.git"
 ```
 
 ### Functions
@@ -40,7 +41,7 @@ trade_republic_portfolio_import(login=None, password=None, file_type='.xlsx', ou
 
 ##### Description
 
-- Scraps and imports portfolio asset information from Scalable Capital and Trade Republic.
+- Scrapes and imports portfolio asset information from Scalable Capital and Trade Republic.
 
 ##### Requirements
 
@@ -56,27 +57,16 @@ trade_republic_portfolio_import(login=None, password=None, file_type='.xlsx', ou
 
 <br>
 
-#### `selenium_webdriver_quit`
-
-```.py
-selenium_webdriver_quit()
-```
-
-##### Description
-
-- Terminates the WebDriver session.
-
-##### Parameters
-
-- None.
-
 ### Code Workflow Example
 
-Execute/Import the [`neobroker-portfolio-importer.py`](./neobroker-portfolio-importer.py) script, and then:
-
 ```.py
+# Import packages
+import os
+from neobroker_portfolio_importer.scalable_capital import scalable_capital_portfolio_import
+from neobroker_portfolio_importer.trade_republic import trade_republic_portfolio_import
+
 # Scrap, import and save as .csv portfolio asset information from Scalable Capital
-scalable_capital_portfolio_import(
+scalable_capital_portfolio_df = scalable_capital_portfolio_import(
     login=None,
     password=None,
     file_type='.xlsx',
@@ -85,11 +75,11 @@ scalable_capital_portfolio_import(
         'Downloads',
         'Assets Scalable Capital.xlsx',
     ),
-    return_df=False,
+    return_df=True,
 )
 
 # Scrap, import and save as .csv portfolio asset information from Trade Republic
-trade_republic_portfolio_import(
+trade_republic_portfolio_df = trade_republic_portfolio_import(
     login=None,
     password=None,
     file_type='.xlsx',
@@ -98,7 +88,7 @@ trade_republic_portfolio_import(
         'Downloads',
         'Assets Trade Republic.xlsx',
     ),
-    return_df=False,
+    return_df=True,
 )
 ```
 
