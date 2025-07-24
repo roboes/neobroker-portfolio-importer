@@ -32,7 +32,7 @@ def trade_republic_portfolio_import(
             pass
 
     else:
-        driver = selenium_webdriver(web_browser='chrome')
+        driver = selenium_webdriver(web_browser='chrome', javascript_disable=True)
 
     # Open website
     driver.get(url='https://app.traderepublic.com')
