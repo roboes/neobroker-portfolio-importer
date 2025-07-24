@@ -1,5 +1,7 @@
 # Neobroker Portfolio Importer
 
+[!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://buymeacoffee.com/roboes)
+
 ## Description
 
 This web-scraping tool aims to extract portfolio asset information (such as stocks, cryptos and ETFs) from Scalable Capital and Trade Republic, given that both neobrokers currently do not feature a portfolio value export. The main features are:
@@ -20,7 +22,7 @@ The code runs locally in the user's machine and imitates, via Chrome WebDriver a
 ### Installation
 
 ```.ps1
-python -m pip install "git+https://github.com/roboes/neobroker-portfolio-importer.git"
+python -m pip install "git+https://github.com/roboes/neobroker-portfolio-importer.git@main"
 ```
 
 ### Functions
@@ -65,7 +67,7 @@ import os
 from neobroker_portfolio_importer.scalable_capital import scalable_capital_portfolio_import
 from neobroker_portfolio_importer.trade_republic import trade_republic_portfolio_import
 
-# Scrap, import and save as .csv portfolio asset information from Scalable Capital
+# Scrap, import and save as .xlsx portfolio asset information from Scalable Capital
 scalable_capital_portfolio_df = scalable_capital_portfolio_import(
     login=None,
     password=None,
@@ -78,7 +80,7 @@ scalable_capital_portfolio_df = scalable_capital_portfolio_import(
     return_df=True,
 )
 
-# Scrap, import and save as .csv portfolio asset information from Trade Republic
+# Scrap, import and save as .xlsx portfolio asset information from Trade Republic
 trade_republic_portfolio_df = trade_republic_portfolio_import(
     login=None,
     password=None,
