@@ -1,6 +1,7 @@
 """About: Selenium configuration and helper function for web scraping."""
 
 # Import packages
+
 import os
 from typing import Literal
 

@@ -1,6 +1,7 @@
 """About: Web-scraping tool to extract and export current portfolio asset information from Trade Republic using Selenium library in Python."""
 
 # Import packages
+
 import re
 import time
 
@@ -18,6 +19,8 @@ if pd.__version__ >= '1.5.0' and pd.__version__ < '3.0.0':
 
 
 # Functions
+
+
 def trade_republic_portfolio_import(
     *,
     login=None,
