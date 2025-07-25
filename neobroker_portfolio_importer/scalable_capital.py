@@ -1,6 +1,7 @@
 """About: Web-scraping tool to extract and export current portfolio asset information from Scalable Capital using Selenium library in Python."""
 
 # Import packages
+
 import re
 import time
 
