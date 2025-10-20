@@ -28,7 +28,7 @@ jobs:
       - name: Setup Python - https://github.com/actions/setup-python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.x' #  Latest stable major version of Python
+          python-version: "3.x" #  Latest stable major version of Python
 
       - name: Install Python dependencies
         run: |

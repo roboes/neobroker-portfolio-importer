@@ -56,10 +56,7 @@ def scalable_capital_portfolio_import(
     else:
         while True:
             try:
-                driver.find_element(
-                    by=By.XPATH,
-                    value='.//div[@data-testid="greeting-text"]',
-                )
+                WebDriverWait(driver=driver, timeout=1).until(EC.url_contains('cockpit'))
                 break
 
             except NoSuchElementException:
@@ -99,7 +96,7 @@ def scalable_capital_portfolio_import(
     # Create empty DataFrame
     assets_df = pd.DataFrame(data=None, index=None, dtype='str')
 
-    for broker in driver.find_elements(by=By.XPATH, value="//*[text()='Broker']"):
+    for broker in driver.find_elements(by=By.XPATH, value="//*[text()='Broker' or text()='Baader Broker']"):
         broker.click()
 
         time.sleep(2)
@@ -116,7 +113,7 @@ def scalable_capital_portfolio_import(
 
         portfolio_section = driver.find_element(by=By.XPATH, value="//h2[text()='Portfolio']/..")
 
-        if 'Start building your portfolio.' in portfolio_section.text:
+        if 'Popular savings plans' in portfolio_section.text:
             continue
 
         else:

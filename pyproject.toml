@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "neobroker-portfolio-importer"
-version = "1.0.0"
+version = "1.0.1"
 authors = [{ name = "roboes" }]
 readme = { file = "readme.md", content-type = "text/markdown" }
 description = "Web-scraping tool to extract and export current portfolio asset information from Scalable Capital and Trade Republic using Selenium library in Python."

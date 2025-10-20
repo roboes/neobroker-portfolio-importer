@@ -1,4 +1,4 @@
 lxml==5.4.0
-pandas==2.3.2
-selenium==4.35.0
+pandas==2.3.3
+selenium==4.37.0
 xlsxwriter==3.2.9
