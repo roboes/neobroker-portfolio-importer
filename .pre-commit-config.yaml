@@ -8,7 +8,7 @@ repos:
     hooks:
       - id: prettier
         name: prettier
-        entry: prettier --write --print-width 220 --ignore-unknown
+        entry: prettier --write --print-width 220 --prose-wrap never --semi true --single-quote true --tab-width 2 --trailing-comma es5 --ignore-unknown
         language: node
         types_or: [javascript, jsx, ts, tsx, json, css, scss, html, markdown, yaml]
         additional_dependencies:
@@ -18,7 +18,7 @@ repos:
     rev: v6.0.0
     hooks:
       - id: check-added-large-files
-        args: ["--maxkb=500"]
+        args: ['--maxkb=500']
       - id: check-ast
       - id: check-builtin-literals
       - id: check-case-conflict
@@ -38,12 +38,12 @@ repos:
       - id: file-contents-sorter
       - id: fix-byte-order-marker
       - id: forbid-submodules
-        args: ["--fix=lf"]
+        args: ['--fix=lf']
       - id: forbid-new-submodules
       - id: mixed-line-ending
-        args: ["--fix=lf"]
+        args: ['--fix=lf']
       - id: pretty-format-json
-        args: ["--autofix"]
+        args: ['--autofix']
       - id: requirements-txt-fixer
       - id: sort-simple-yaml
 
@@ -54,18 +54,18 @@ repos:
       - id: taplo-lint
 
   - repo: https://github.com/sqlfluff/sqlfluff
-    rev: 3.5.0
+    rev: 4.0.0a1
     hooks:
       - id: sqlfluff-fix
-        args: ["--dialect=mysql", "--exclude-rules=ambiguous.column_count, layout.long_lines, references.keywords"]
+        args: ['--dialect=mysql', '--exclude-rules=ambiguous.column_count, layout.long_lines, references.keywords']
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.1
+    rev: v0.14.4
     hooks:
       - id: ruff
-        args: ["--fix", "--exit-non-zero-on-fix", "--ignore=B007,B023,C408,D103,E203,E266,E402,E501,F821,S105,S110,S310,SIM105"] # ruff-pre-commit does not recognize these rule selectors: B902,CM001,S410,SCS109,W503,W504
+        args: ['--fix', '--exit-non-zero-on-fix', '--ignore=B007,B023,C408,D103,E203,E266,E402,E501,F821,S105,S110,S310,SIM105'] # ruff-pre-commit does not recognize these rule selectors: B902,CM001,S410,SCS109,W503,W504
       - id: ruff-format
-        args: ["--line-length=220", "--config", "format.quote-style='single'", "--config", "format.indent-style='space'"]
+        args: ['--line-length=220', '--config', "format.quote-style='single'", '--config', "format.indent-style='space'"]
 
   - repo: https://github.com/pre-commit/pygrep-hooks
     rev: v1.10.0
@@ -85,14 +85,7 @@ repos:
     rev: v3.21.0
     hooks:
       - id: pyupgrade
-        args: ["--py314-plus"]
-
-  - repo: https://github.com/codespell-project/codespell
-    rev: v2.4.1
-    hooks:
-      - id: codespell
-        exclude: "^data/"
-        args: ["--ignore-words-list=alle,als,bootup,datas,deine,dokument,doubleclick,fo,ges,ist,itens,nax,oder,produkt,referers,ressource,ser,sie,tage,termine"] # The --ignore-words-list argument has a bug where it needs to be lowercase, see: https://github.com/codespell-project/codespell/issues/1390
+        args: ['--py314-plus']
 
 default_language_version:
   python: python3

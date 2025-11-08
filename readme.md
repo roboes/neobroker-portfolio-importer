@@ -14,7 +14,7 @@ This web-scraping tool aims to extract portfolio asset information (such as stoc
 
 The code runs locally in the user's machine and imitates, via Chrome WebDriver and the Selenium library, user's behavior and extracts the assets information from Scalable Capital and Trade Republic. No information is collected and send externally.
 
-> [!WARNING]
+> [!WARNING]  
 > For security reason, it is recommended to keep the default parameters `login = None` and `password = None`.
 
 ## Usage

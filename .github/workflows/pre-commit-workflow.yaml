@@ -11,7 +11,7 @@ on:
   pull_request:
 
   push:
-    branches: ["*"]
+    branches: ['*']
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -28,7 +28,7 @@ jobs:
       - name: Setup Python - https://github.com/actions/setup-python
         uses: actions/setup-python@v6
         with:
-          python-version: "3.x" #  Latest stable major version of Python
+          python-version: '3.x' #  Latest stable major version of Python
 
       - name: Install Python dependencies
         run: |
