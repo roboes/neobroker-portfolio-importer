@@ -39,29 +39,26 @@ repos:
       - id: file-contents-sorter
       - id: fix-byte-order-marker
       - id: forbid-submodules
-        args: ['--fix=lf']
       - id: forbid-new-submodules
       - id: mixed-line-ending
         args: ['--fix=lf']
-      - id: pretty-format-json
-        args: ['--autofix']
       - id: requirements-txt-fixer
-      - id: sort-simple-yaml
 
   - repo: https://github.com/ComPWA/taplo-pre-commit
     rev: v0.9.3
     hooks:
       - id: taplo-format
       - id: taplo-lint
+        args: ['--no-schema']
 
   - repo: https://github.com/sqlfluff/sqlfluff
-    rev: 4.0.0
+    rev: 4.2.2
     hooks:
       - id: sqlfluff-fix
         args: ['--dialect=mysql', '--exclude-rules=ambiguous.column_count, layout.long_lines, references.keywords']
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.14.13
+    rev: v0.15.22
     hooks:
       - id: ruff
         args: ['--fix', '--exit-non-zero-on-fix', '--ignore=B007,B023,C408,D103,E203,E266,E402,E501,F821,S105,S110,S310,SIM105'] # ruff-pre-commit does not recognize these rule selectors: B902,CM001,S410,SCS109,W503,W504

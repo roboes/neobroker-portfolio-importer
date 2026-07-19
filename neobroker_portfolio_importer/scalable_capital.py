@@ -16,14 +16,7 @@ from .selenium_utils import selenium_webdriver
 # Functions
 
 
-def scalable_capital_portfolio_import(
-    *,
-    login=None,
-    password=None,
-    file_type='.xlsx',
-    output_path=None,
-    return_df=False,
-):
+def scalable_capital_portfolio_import(*, login=None, password=None, file_type='.xlsx', output_path=None, return_df=False):
     # Load Selenium WebDriver
     if 'driver' in vars():
         if driver.service.is_connectable() is True:
@@ -189,34 +182,12 @@ def scalable_capital_portfolio_import(
     # Save
     if file_type == '.xlsx' and output_path is not None:
         with pd.ExcelWriter(
-            path=output_path,
-            date_format='YYYY-MM-DD',
-            datetime_format='YYYY-MM-DD HH:MM:SS',
-            engine='xlsxwriter',
-            engine_kwargs={
-                'options': {'strings_to_formulas': False, 'strings_to_urls': False},
-            },
+            path=output_path, date_format='YYYY-MM-DD', datetime_format='YYYY-MM-DD HH:MM:SS', engine='xlsxwriter', engine_kwargs={'options': {'strings_to_formulas': False, 'strings_to_urls': False}}
         ) as writer:
-            assets_df.to_excel(
-                excel_writer=writer,
-                sheet_name='Portfolio',
-                na_rep='',
-                header=True,
-                index=False,
-                index_label=None,
-                freeze_panes=(1, 0),
-            )
+            assets_df.to_excel(excel_writer=writer, sheet_name='Portfolio', na_rep='', header=True, index=False, index_label=None, freeze_panes=(1, 0))
 
     elif file_type == '.csv' and output_path is not None:
-        assets_df.to_csv(
-            path_or_buf=output_path,
-            sep=',',
-            na_rep='',
-            header=True,
-            index=False,
-            index_label=None,
-            encoding='utf-8',
-        )
+        assets_df.to_csv(path_or_buf=output_path, sep=',', na_rep='', header=True, index=False, index_label=None, encoding='utf-8')
 
     else:
         assets_df.to_clipboard(excel=True, sep=None, index=False)
