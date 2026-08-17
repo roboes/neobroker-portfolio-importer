@@ -21,7 +21,7 @@ The code runs locally in the user's machine and imitates, via Chrome WebDriver a
 
 ### Installation
 
-```.ps1
+```ps1
 python -m pip install "git+https://github.com/roboes/neobroker-portfolio-importer.git@main"
 ```
 
@@ -29,7 +29,7 @@ python -m pip install "git+https://github.com/roboes/neobroker-portfolio-importe
 
 #### `scalable_capital_portfolio_import`
 
-```.py
+```py
 scalable_capital_portfolio_import(login=None, password=None, file_type='.xlsx', output_path=os.path.join(os.path.expanduser('~'), 'Downloads', 'Assets Scalable Capital.xlsx'))
 ```
 
@@ -37,7 +37,7 @@ scalable_capital_portfolio_import(login=None, password=None, file_type='.xlsx', 
 
 #### `trade_republic_portfolio_import`
 
-```.py
+```py
 trade_republic_portfolio_import(login=None, password=None, file_type='.xlsx', output_path=os.path.join(os.path.expanduser('~'), 'Downloads', 'Assets Trade Republic.xlsx'))
 ```
 
@@ -61,7 +61,7 @@ trade_republic_portfolio_import(login=None, password=None, file_type='.xlsx', ou
 
 ### Code Workflow Example
 
-```.py
+```py
 # Import packages
 import os
 from neobroker_portfolio_importer.scalable_capital import scalable_capital_portfolio_import
