@@ -9,7 +9,6 @@ from selenium import webdriver
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.proxy import Proxy, ProxyType
 
-
 # Functions
 
 
